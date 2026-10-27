@@ -135,3 +135,16 @@ def enqueued(monkeypatch):
 
     monkeypatch.setattr("catalog.views.enqueue_enrichment", fake)
     return calls
+
+
+@pytest.fixture
+def genre_factory(db):
+    from catalog.models import Genre
+
+    def make(**overrides):
+        name = overrides.pop("name", "shoegaze")
+        defaults = {"slug": name.replace(" ", "-"), "name": name}
+        defaults.update(overrides)
+        return Genre.objects.create(**defaults)
+
+    return make

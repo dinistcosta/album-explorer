@@ -62,4 +62,20 @@ def enrich_artist(artist_id: int) -> None:
 
 @task
 def resolve_genre_room(genre_id: int) -> None:
-    """Body arrives with Task 14."""
+    """Refresh a genre room's Last.fm ranking and resolve its rows to MusicBrainz release groups."""
+    from sources import lastfm
+    from sources.http import SourceUnavailable
+
+    from .models import Genre
+    from .services import genres_room
+
+    genre = Genre.objects.filter(pk=genre_id).first()
+    if genre is None:
+        return
+    try:
+        items = lastfm.tag_top_albums(genre.name, 100)
+        if items:
+            genres_room.store_rankings(genre, items)
+        genres_room.resolve_rankings(genre)
+    except SourceUnavailable:
+        logger.warning("genre room %s: source unavailable", genre.slug)

@@ -20,6 +20,15 @@ def enqueue_enrichment(obj) -> None:
     task.enqueue(obj.pk)
 
 
+def enqueue_room(genre) -> None:
+    """Enqueue the room-resolution task for a Genre unless one is already queued/running."""
+    from catalog import tasks
+
+    if _already_pending(tasks.resolve_genre_room, genre.pk):
+        return
+    tasks.resolve_genre_room.enqueue(genre.pk)
+
+
 def _already_pending(task, object_id) -> bool:
     # Only the database backend leaves rows behind to look at; the immediate backend runs inline.
     from django.tasks.base import TaskResultStatus

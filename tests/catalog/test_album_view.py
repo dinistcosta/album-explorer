@@ -193,7 +193,7 @@ def test_genre_chips_and_quote_blocks(client, linked_album):
     Quote.objects.create(album=linked_album, text="We made it fast", speaker="Kurt Cobain", source_label="Spin", source_url="https://e.org/s", origin="wikiquote", lang="en")
     Quote.objects.create(album=linked_album, text="Wanted it huge", speaker="Butch Vig", source_label="Mojo", source_url="https://e.org/m", origin="wikipedia", lang="en")
     html = _page(client, linked_album)
-    assert '<span class="chip">grunge</span>' in html
+    assert '<a class="chip" href="/pt/genre/grunge/">grunge</a>' in html
     assert "Em discurso direto" in html and "We made it fast" in html and "Kurt Cobain" in html
     assert 'href="https://e.org/s"' in html and "Wikiquote" in html
     assert "Wanted it huge" in html and "pull-quote" in html

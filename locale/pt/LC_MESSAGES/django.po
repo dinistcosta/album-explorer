@@ -347,3 +347,22 @@ msgstr "Nada encontrado para esta pesquisa."
 
 msgid "MusicBrainz didn't respond; showing what we already know."
 msgstr "A pesquisa no MusicBrainz não respondeu; mostramos o que já conhecemos."
+
+msgid "Rooms by genre"
+msgstr "Salas por género"
+
+msgid "Genre room"
+msgstr "Sala de género"
+
+msgid "This room is still being assembled."
+msgstr "Esta sala ainda está a ser montada."
+
+msgid "This room has no albums yet."
+msgstr "Esta sala ainda não tem álbuns."
+
+msgid "Undated"
+msgstr "Sem data"
+
+#, python-format
+msgid "%(decade)ss"
+msgstr "Anos %(decade)s"

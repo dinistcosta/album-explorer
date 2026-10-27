@@ -41,7 +41,7 @@
   {% if members or links or awards or influences or genres %}
   <aside class="a-aside stack">
   {% if genres %}
-  <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li><span class="chip">{{ g.name }}</span></li>{% endfor %}</ul>
+  <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li><a class="chip" href="{% url 'genre_detail' g.slug %}">{{ g.name }}</a></li>{% endfor %}</ul>
   {% endif %}
 
   {% if members %}

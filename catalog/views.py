@@ -1,24 +1,44 @@
 from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import get_language
+from django.conf import settings
+from django.utils.translation import get_language, gettext
 
 from sources.http import SourceNotFound, SourceUnavailable
 
-from .models import Album, Artist
+from .models import Album, Artist, Genre, GenreRanking
 from .services.album_import import import_album_core
 from .services.artist_import import discography_sections, header_cover_album, import_artist_core
 from .services.stories import _country_name
 from .services.links import discogs_search_url, listen_and_buy
 from .services.stories import select_story
 from .services.search import search as run_search, suggest as run_suggest
-from .services.refresh import enqueue_enrichment, needs_enrichment
+from .services.genres_room import room_by_decade
+from .services.refresh import enqueue_enrichment, enqueue_room, needs_enrichment
 
 MAX_POLLS = 15
 
 
 def home(request):
-    return render(request, "catalog/home.html")
+    return render(request, "catalog/home.html", {"featured_genres": Genre.objects.filter(featured=True).order_by("name")})
+
+
+def _decade_label(decade):
+    if decade is None:
+        return gettext("Undated")
+    shown = decade % 100 if decade < 2000 and (get_language() or "").startswith("pt") else decade  # "Anos 60"
+    return gettext("%(decade)ss") % {"decade": shown}
+
+
+def genre_detail(request, slug):
+    genre = get_object_or_404(Genre, slug=slug)
+    rankings = GenreRanking.objects.filter(genre=genre)
+    unresolved = rankings.filter(resolved_at__isnull=True).exists()
+    building = unresolved or (not rankings.exists() and bool(settings.LASTFM_API_KEY))
+    if building:
+        enqueue_room(genre)
+    rooms = [{"label": _decade_label(d), "albums": albums} for d, albums in room_by_decade(genre)]
+    return render(request, "catalog/genre_detail.html", {"genre": genre, "rooms": rooms, "building": building})
 
 
 def search(request):

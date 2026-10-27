@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ genre.name }} · Album Explorer{% endblock %}
+{% block content %}
+<section class="genre-room">
+  <p class="label">{% translate "Genre room" %}</p>
+  <h1>{{ genre.name }}</h1>
+  {% if genre.description %}
+  <p class="genre-description">{{ genre.description }}</p>
+  <div class="source">{% translate "Source" %}: {% if genre.description_source_url %}<a href="{{ genre.description_source_url }}" rel="noopener">Last.fm</a>{% else %}Last.fm{% endif %} · CC BY-SA</div>
+  {% endif %}
+  {% if building %}<p class="room-notice" role="status">{% translate "This room is still being assembled." %}</p>{% endif %}
+  {% for room in rooms %}
+  <h2 class="section-title">{{ room.label }}</h2>
+  {% include "catalog/_cover_grid.html" with albums=room.albums %}
+  {% empty %}
+  {% if not building %}<p>{% translate "This room has no albums yet." %}</p>{% endif %}
+  {% endfor %}
+</section>
+{% endblock %}

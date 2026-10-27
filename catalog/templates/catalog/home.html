@@ -11,4 +11,10 @@
   </form>
   <div id="suggestions" class="suggestions" aria-live="polite"></div>
 </section>
+{% if featured_genres %}
+<section class="home-rooms">
+  <h2 class="section-title">{% translate "Rooms by genre" %}</h2>
+  <ul class="chips">{% for g in featured_genres %}<li><a class="chip" href="{% url 'genre_detail' g.slug %}">{{ g.name }}</a></li>{% endfor %}</ul>
+</section>
+{% endif %}
 {% endblock %}
