@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "django_tasks_db",
     "catalog",
     "sources",
 ]
@@ -69,3 +70,7 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
+
+# Database-backed task queue (no Redis). Worker: `python manage.py db_worker`.
+# Tests swap this for the immediate backend (tests/conftest.py).
+TASKS = {"default": {"BACKEND": "django_tasks_db.DatabaseBackend"}}

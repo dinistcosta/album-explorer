@@ -117,3 +117,20 @@ def imported_album(db, mb_fixtures):
     from catalog.services.album_import import import_album_core
 
     return import_album_core(NEVERMIND_RG, foreground=True)
+
+
+@pytest.fixture(autouse=True)
+def immediate_tasks(settings):
+    settings.TASKS = {"default": {"BACKEND": "django.tasks.backends.immediate.ImmediateBackend"}}
+
+
+@pytest.fixture
+def enqueued(monkeypatch):
+    """Records (task_name, object_id) instead of enqueueing, so view tests run no enrichers."""
+    calls = []
+
+    def fake(obj):
+        calls.append(("enrich_album" if type(obj).__name__ == "Album" else "enrich_artist", obj.pk))
+
+    monkeypatch.setattr("catalog.views.enqueue_enrichment", fake)
+    return calls

@@ -1,5 +1,6 @@
 Django>=6.0,<6.1
 django-tasks
+django-tasks-db
 httpx
 beautifulsoup4
 Pillow

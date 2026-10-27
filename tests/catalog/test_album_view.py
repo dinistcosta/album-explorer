@@ -6,6 +6,8 @@ from django.utils import timezone
 from catalog.models import Release, Track
 from tests.ids import NEVERMIND_RG
 
+pytestmark = pytest.mark.usefixtures("enqueued")
+
 
 def make_album(album_factory, sides):
     album = album_factory(title="Sided", artist_credit="Band")

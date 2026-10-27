@@ -6,6 +6,7 @@ from sources.http import SourceNotFound, SourceUnavailable
 
 from .models import Album
 from .services.album_import import import_album_core
+from .services.refresh import enqueue_enrichment, needs_enrichment
 
 MAX_POLLS = 15
 
@@ -62,6 +63,8 @@ def album_detail(request, mbid):
         except SourceUnavailable:
             return render(request, "catalog/503.html", status=503)
         album = Album.objects.select_related("artist", "reference_release").get(mbid=mbid)
+    if needs_enrichment(album):
+        enqueue_enrichment(album)
     release = album.reference_release
     total_ms = release.tracks.aggregate(t=Sum("length_ms"))["t"] if release else None
     context = {
@@ -75,6 +78,8 @@ def album_detail(request, mbid):
 
 def album_enrichment(request, mbid):
     album = get_object_or_404(Album, mbid=mbid)
+    if needs_enrichment(album):
+        enqueue_enrichment(album)
     try:
         n = max(0, int(request.GET.get("n", 0)))
     except ValueError:
