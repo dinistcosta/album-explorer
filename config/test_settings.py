@@ -2,6 +2,7 @@
 import os
 import tempfile
 
+os.environ.setdefault("ENV_FILE", os.devnull)  # never read the developer's .env
 os.environ.setdefault("DEBUG", "1")
 os.environ.setdefault("SECRET_KEY", "test-only-secret-key")
 
