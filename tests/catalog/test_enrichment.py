@@ -86,3 +86,20 @@ def test_first_visit_enqueues_after_import(client, db, mb_fixtures, enqueued):
 def test_enrichment_endpoint_enqueues_when_unenriched(client, imported_album, enqueued):
     client.get(f"/pt/album/{imported_album.mbid}/sections/")
     assert enqueued == [("enrich_album", imported_album.pk)]
+
+
+def test_cover_archive_outage_is_not_an_error(db, imported_album, mb_fixtures, monkeypatch, caplog):
+    """A Cover Art Archive 5xx leaves the album without a cover but is a warning, not a failed enricher."""
+    from catalog.services.color import apply_cover_and_accent
+
+    monkeypatch.setattr(tasks, "ALBUM_ENRICHERS", [apply_cover_and_accent])
+    mb_fixtures.get(url__startswith="https://coverartarchive.org/").respond(500)
+    imported_album.cover_url = ""
+    imported_album.enriched_at = None
+    imported_album.save()
+    with caplog.at_level("WARNING"):
+        tasks.enrich_album.call(imported_album.pk)
+    imported_album.refresh_from_db()
+    assert imported_album.enriched_at is not None and imported_album.cover_url == ""
+    assert not [r for r in caplog.records if r.levelname == "ERROR"]
+    assert any("cover" in r.getMessage().lower() for r in caplog.records if r.levelname == "WARNING")

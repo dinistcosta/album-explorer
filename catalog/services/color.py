@@ -1,10 +1,14 @@
 import colorsys
 import io
+import logging
 import math
 
 from PIL import Image
 
 from sources.coverart import cover_url, fetch_cover
+from sources.http import SourceUnavailable
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_ACCENT = "#c8a45a"
 BACKGROUND = "#141210"
@@ -62,7 +66,11 @@ def extract_accent(image: bytes) -> str:
 
 def apply_cover_and_accent(album) -> None:
     """Enricher: set cover_url (only when a cover exists) and accent_color, respecting locks."""
-    data = fetch_cover(str(album.mbid))
+    try:
+        data = fetch_cover(str(album.mbid))
+    except SourceUnavailable:
+        logger.warning("cover for %r unavailable (Cover Art Archive down); continuing without it", album)
+        return
     if data is None:
         return
     values = {"cover_url": cover_url(str(album.mbid))}
