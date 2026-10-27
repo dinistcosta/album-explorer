@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import Http404
+from django.http import Http404, HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404, render
 from django.conf import settings
 from django.utils.translation import get_language, gettext
@@ -14,6 +14,7 @@ from .services.links import discogs_search_url, listen_and_buy
 from .services.stories import select_story
 from .services.search import search as run_search, suggest as run_suggest
 from .services.genres_room import room_by_decade
+from .services.merge import fold_merged_stub
 from .services.refresh import enqueue_enrichment, enqueue_room, needs_enrichment
 
 MAX_POLLS = 15
@@ -110,12 +111,15 @@ def album_detail(request, mbid):
     album = Album.objects.select_related("artist", "reference_release").filter(mbid=mbid).first()
     if album is None or album.imported_at is None:  # None: a stub created from an artist's discography
         try:
-            import_album_core(str(mbid), foreground=True)
+            imported = import_album_core(str(mbid), foreground=True)
         except SourceNotFound:
             raise Http404("album not found")
         except SourceUnavailable:
             return render(request, "catalog/503.html", status=503)
-        album = Album.objects.select_related("artist", "reference_release").get(mbid=mbid)
+        if str(imported.mbid) != str(mbid):  # merged on MusicBrainz: send visitors to the canonical id
+            fold_merged_stub(Album, str(mbid), imported)
+            return HttpResponsePermanentRedirect(imported.get_absolute_url())
+        album = Album.objects.select_related("artist", "reference_release").get(pk=imported.pk)
     if needs_enrichment(album):
         enqueue_enrichment(album)
     release = album.reference_release
@@ -180,13 +184,17 @@ def artist_detail(request, mbid):
     artist = Artist.objects.filter(mbid=mbid).first()
     if artist is None or artist.imported_at is None:  # None: a member / credit stub, never imported as a band
         try:
-            import_artist_core(str(mbid), foreground=True)
+            imported = import_artist_core(str(mbid), foreground=True)
         except SourceNotFound:
             raise Http404("artist not found")
         except SourceUnavailable:
             if artist is None:
                 return render(request, "catalog/503.html", status=503)
-        artist = Artist.objects.get(mbid=mbid)
+        else:
+            if str(imported.mbid) != str(mbid):  # merged on MusicBrainz: send visitors to the canonical id
+                fold_merged_stub(Artist, str(mbid), imported)
+                return HttpResponsePermanentRedirect(imported.get_absolute_url())
+            artist = Artist.objects.get(pk=imported.pk)
     if needs_enrichment(artist):
         enqueue_enrichment(artist)
     return render(request, "catalog/artist_detail.html", _artist_context(artist))
