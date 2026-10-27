@@ -1,0 +1,30 @@
+{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Album Explorer{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+<script src="{% static 'js/htmx.min.js' %}" defer></script>
+</head>
+<body style="--accent: {% block accent %}#c8a45a{% endblock %}">
+<header class="site-header">
+  <a class="brand" href="{% url 'home' %}">Album Explorer</a>
+  <form class="lang-switch" action="{% url 'set_language' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    {% get_available_languages as LANGUAGES %}
+    {% for code, name in LANGUAGES %}
+      <button type="submit" name="language" value="{{ code }}"{% if code == LANGUAGE_CODE %} class="active" aria-current="true"{% endif %}>{{ code|upper }}</button>
+    {% endfor %}
+  </form>
+</header>
+<main>{% block content %}{% endblock %}</main>
+<footer class="site-footer">
+  <span class="label">{% translate "A museum of albums" %}</span>
+</footer>
+</body>
+</html>

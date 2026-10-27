@@ -1,0 +1,9 @@
+Django>=6.0,<6.1
+django-tasks
+httpx
+beautifulsoup4
+Pillow
+dj-database-url
+whitenoise
+gunicorn
+psycopg[binary]
