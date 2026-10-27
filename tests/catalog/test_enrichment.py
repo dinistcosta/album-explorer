@@ -16,7 +16,7 @@ def boom(obj):
 
 def test_enrichers_registered_in_order():
     assert tasks.ALBUM_ENRICHERS[:2] == [apply_vinyl_sides, apply_cover_and_accent]
-    assert tasks.ARTIST_ENRICHERS == [import_artist_wikidata]
+    assert tasks.ARTIST_ENRICHERS[0] is import_artist_wikidata
     assert import_album_wikidata in tasks.ALBUM_ENRICHERS
 
 
