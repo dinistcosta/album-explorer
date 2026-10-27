@@ -194,7 +194,7 @@ def _format_list(album: Album) -> list[str]:
 
 
 def _studio(album: Album):
-    credits = [c for c in album.credits.filter(role="recorded at", place__isnull=False).select_related("place")
+    credits = [c for c in album.credits.filter(role="recorded at", place__isnull=False, is_hidden=False).select_related("place")
                .order_by("id")]
     if not credits:
         return None, ""
@@ -220,7 +220,7 @@ def build_fact_sheet(album: Album, lang: str) -> list[str]:
                 sentences.append(_("Recorded at %(studio)s.") % args)
 
         names = list(dict.fromkeys(
-            c.person.name for c in album.credits.filter(role="producer", person__isnull=False)
+            c.person.name for c in album.credits.filter(role="producer", person__isnull=False, is_hidden=False)
             .select_related("person").order_by("id")))
         if names:
             sentences.append(_("Produced by %(names)s.") % {"names": _join_names(names)})

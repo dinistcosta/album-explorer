@@ -7,6 +7,7 @@ from urllib.parse import quote
 from django.db import transaction
 
 from catalog.models import Album, Artist, Award, Influence
+from catalog.services.manual import manual_keys
 from catalog.tasks import register_album_enricher, register_artist_enricher
 from sources import musicbrainz as mb
 from sources import wikidata
@@ -45,8 +46,11 @@ def _label(entity: dict | None, lang: str) -> str:
 
 
 def _replace_awards(owner_field: str, owner, awards, labels: dict) -> None:
+    kept = manual_keys(Award.objects.filter(**{owner_field: owner}))  # edited or deleted by hand
     rows = []
     for qid, year in awards:
+        if qid in kept:
+            continue
         name_en, name_pt = _label(labels.get(qid), "en"), _label(labels.get(qid), "pt")
         rows.append(Award(
             **{owner_field: owner}, wikidata_id=qid, year=year,

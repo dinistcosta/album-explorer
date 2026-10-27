@@ -5,6 +5,7 @@ from catalog.models import Album, Artist, Credit, Place, Release, Track
 from sources import musicbrainz as mb
 from sources.http import SourceNotFound
 
+from .manual import credit_key, manual_keys
 from .editions import assign_sides, choose_reference_release, own_sides, vinyl_candidates
 
 MAX_VINYL_CANDIDATES = 3
@@ -149,6 +150,7 @@ def import_album_core(mbid: str, *, foreground: bool) -> Album:
         album.save()
 
         Credit.objects.filter(album=album, is_manual=False).delete()
+        kept = manual_keys(Credit.objects.filter(album=album))  # edited or deleted by hand
         for entry in credit_entries:
             person = place = None
             if "artist" in entry:
@@ -160,10 +162,14 @@ def import_album_core(mbid: str, *, foreground: bool) -> Album:
                 if place.name != p.get("name", "") or place.area != area:
                     place.name, place.area = p.get("name", ""), area
                     place.save()
+            track = tracks.get(entry["key"]) if entry["key"] else None
+            key = credit_key(entry["role"], person and person.pk, place and place.pk, track and track.pk)
+            if key in kept:
+                continue
+            kept.add(key)
             Credit.objects.create(
-                album=album, track=tracks.get(entry["key"]) if entry["key"] else None,
-                person=person, place=place, role=entry["role"], attributes=entry["attributes"],
-                begin_date=entry.get("begin", ""),
+                album=album, track=track, person=person, place=place, role=entry["role"],
+                attributes=entry["attributes"], begin_date=entry.get("begin", ""),
             )
     return album
 

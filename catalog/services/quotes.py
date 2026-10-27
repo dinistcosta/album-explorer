@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from django.db import transaction
 
 from catalog.models import Album, Quote
+from catalog.services.manual import manual_keys
 from catalog.services.text import normalize
 from catalog.services.wikidata_import import _item_ids, _label
 from catalog.tasks import register_album_enricher
@@ -135,7 +136,7 @@ def _people(album: Album) -> list[str]:
         names.append(album.artist.name)
     elif album.artist_credit:
         names.append(album.artist_credit)
-    names += [c.person.name for c in album.credits.filter(role="producer", person__isnull=False)
+    names += [c.person.name for c in album.credits.filter(role="producer", person__isnull=False, is_hidden=False)
               .select_related("person").order_by("id")]
     return list(dict.fromkeys(n for n in names if n))
 
@@ -187,8 +188,10 @@ def import_quotes(album: Album) -> None:
                     "lang": lang})
 
     order = {"wikiquote": 0, "wikipedia": 1}
-    rows = sorted(rows, key=lambda r: order[r["origin"]])[:MAX_QUOTES]
+    rows = sorted(rows, key=lambda r: order[r["origin"]])
     with transaction.atomic():
+        kept = manual_keys(album.quotes.all())  # edited or deleted by hand
+        rows = [r for r in rows if normalize(r["text"]) not in kept][:MAX_QUOTES]
         album.quotes.filter(is_manual=False).delete()
         for row in rows:
             Quote.objects.create(album=album, is_manual=False, **row)

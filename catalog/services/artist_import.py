@@ -2,10 +2,10 @@
 from django.db import transaction
 from django.utils import timezone
 
-from catalog.models import Album, Artist, ExternalLink, Membership
+from catalog.models import Album, Artist, Membership
 from catalog.services.album_import import _artist_values, _upsert_artist, _year
 from catalog.services.genres import attach_genres, significant_genre_names
-from catalog.services.links import classify_url
+from catalog.services.links import classify_url, store_links
 from catalog.tasks import register_artist_enricher
 from sources import musicbrainz as mb
 from sources.wikidata import wikidata_id_from_rels
@@ -106,9 +106,7 @@ def import_artist_core(mbid: str, *, foreground: bool) -> Artist:
         artist.apply_source_fields(**values)
         artist.save()
 
-        for url, (kind, service) in links.items():
-            ExternalLink.objects.update_or_create(artist=artist, url=url, defaults={"kind": kind, "service": service})
-        artist.links.exclude(url__in=list(links)).delete()
+        store_links(artist.links, {"artist": artist}, links)
 
         artist.memberships.all().delete()
         for m in members:

@@ -2,7 +2,7 @@
 from django.db import transaction
 
 from catalog.models import (
-    Album, Artist, Award, Credit, GenreRanking, Influence, Membership, Quote, Story,
+    Album, Artist, Award, Credit, ExternalLink, GenreRanking, Influence, Membership, Quote, Story,
 )
 
 
@@ -10,7 +10,7 @@ def _has_manual_data(obj) -> bool:
     if obj.locked_fields:
         return True
     owner = {"album" if isinstance(obj, Album) else "artist": obj}
-    if any(m.objects.filter(is_manual=True, **owner).exists() for m in (Story, Quote, Award)):
+    if any(m.objects.filter(is_manual=True, **owner).exists() for m in (Story, Quote, Award, ExternalLink)):
         return True
     if isinstance(obj, Album):
         return Credit.objects.filter(album=obj, is_manual=True).exists()

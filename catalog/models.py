@@ -140,6 +140,7 @@ class Credit(models.Model):
     attributes = models.JSONField(default=list, blank=True)
     begin_date = models.CharField(max_length=10, blank=True)  # partial date from the MB relation, e.g. "1991-05"
     is_manual = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)  # deleted by an editor: kept so a refresh does not bring it back
 
 
 class Membership(models.Model):
@@ -222,6 +223,7 @@ class Quote(models.Model):
     origin = models.CharField(max_length=16, choices=Origin.choices)
     lang = models.CharField(max_length=8, blank=True)
     is_manual = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)
 
 
 class Award(models.Model):
@@ -232,6 +234,7 @@ class Award(models.Model):
     name_en = models.CharField(max_length=300, blank=True)
     year = models.IntegerField(null=True, blank=True)
     is_manual = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)
 
 
 class Influence(models.Model):
@@ -255,6 +258,8 @@ class ExternalLink(models.Model):
     kind = models.CharField(max_length=16, choices=Kind.choices)
     service = models.CharField(max_length=64, blank=True)
     url = models.URLField(max_length=1000)
+    is_manual = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

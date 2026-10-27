@@ -75,14 +75,14 @@ def _links_context(album):
 
 def _sections_context(album, n=0):
     credits = {}
-    for c in album.credits.select_related("person", "place"):
+    for c in album.credits.filter(is_hidden=False).select_related("person", "place"):
         name = c.person.name if c.person else (c.place.name if c.place else "")
         if not name:
             continue
         names = credits.setdefault(c.role, [])
         if name not in names:
             names.append(name)
-    all_quotes = list(album.quotes.order_by("id"))
+    all_quotes = list(album.quotes.filter(is_hidden=False).order_by("id"))
     liner_quote = next((q for q in all_quotes if q.origin == "wikipedia"), None)  # pulled into the liner notes
     quotes = [q for q in all_quotes if q is not liner_quote]
     polling = album.enriched_at is None and n < MAX_POLLS
@@ -93,7 +93,7 @@ def _sections_context(album, n=0):
         "quotes": quotes,
         "liner_quote": liner_quote,
         "story": select_story(album, get_language()),
-        "awards": list(album.awards.all()),
+        "awards": list(album.awards.filter(is_hidden=False)),
         "genres": [ag.genre for ag in album.album_genres.select_related("genre")],
         "polling": polling,
         "next_n": n + 1,
@@ -151,7 +151,7 @@ LINK_ORDER = ["official", "listen", "social"]
 
 def _artist_links(artist):
     seen, out = set(), []
-    for link in sorted(artist.links.all(), key=lambda l: (LINK_ORDER.index(l.kind) if l.kind in LINK_ORDER else 9, l.id)):
+    for link in sorted(artist.links.filter(is_hidden=False), key=lambda l: (LINK_ORDER.index(l.kind) if l.kind in LINK_ORDER else 9, l.id)):
         if (link.kind, link.service) in seen:
             continue
         seen.add((link.kind, link.service))
@@ -166,8 +166,8 @@ def _artist_context(artist, n=0):
     return {
         "artist": artist,
         "story": select_story(artist, lang),
-        "quotes": list(artist.quotes.order_by("id")),
-        "awards": list(artist.awards.all()),
+        "quotes": list(artist.quotes.filter(is_hidden=False).order_by("id")),
+        "awards": list(artist.awards.filter(is_hidden=False)),
         "genres": [ag.genre for ag in artist.artist_genres.select_related("genre")],
         "members": list(artist.memberships.select_related("member").order_by("begin_year", "id")),
         "links": _artist_links(artist),

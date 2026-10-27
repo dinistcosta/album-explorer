@@ -4,6 +4,7 @@ from urllib.parse import quote_plus, urlparse
 from django.db import transaction
 
 from catalog.models import Album, ExternalLink
+from catalog.services.manual import manual_keys
 from catalog.tasks import register_album_enricher
 from sources import musicbrainz as mb
 
@@ -76,10 +77,17 @@ def import_album_links(album: Album) -> None:
             if _has(found, "spotify") and _has(found, "apple_music"):
                 break
     with transaction.atomic():
-        for url, (kind, service) in found.items():
-            ExternalLink.objects.update_or_create(
-                album=album, url=url, defaults={"kind": kind, "service": service})
-        album.links.exclude(url__in=list(found)).delete()
+        store_links(album.links, {"album": album}, found)
+
+
+def store_links(related, owner: dict, found: dict[str, tuple[str, str]]) -> None:
+    """Upsert imported links and drop the imported ones the source no longer lists.
+    Manual and hidden rows are never touched, and block an imported row with the same url."""
+    manual = manual_keys(related.all())
+    for url, (kind, service) in found.items():
+        if url not in manual:
+            ExternalLink.objects.update_or_create(**owner, url=url, defaults={"kind": kind, "service": service})
+    related.filter(is_manual=False).exclude(url__in=list(found)).delete()
 
 
 def discogs_search_url(artist: str, title: str) -> str:
@@ -89,7 +97,7 @@ def discogs_search_url(artist: str, title: str) -> str:
 def listen_and_buy(album: Album) -> tuple[list[dict], list[dict]]:
     """Display data for the hero: one listen link per service (fixed order), buy links (Bandcamp, Discogs search)."""
     by_service = {}
-    for link in album.links.filter(kind="listen").order_by("id"):
+    for link in album.links.filter(kind="listen", is_hidden=False).order_by("id"):
         by_service.setdefault(link.service, link.url)
     listen = [{"service": s, "name": SERVICE_NAMES[s], "url": by_service[s]}
               for s in LISTEN_ORDER if s in by_service]

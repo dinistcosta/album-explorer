@@ -5,6 +5,7 @@ from sources.http import SourceUnavailable
 
 from .models import Album, Artist, Award, Credit, ExternalLink, Genre, Quote, Story
 from .services.album_import import import_album_core
+from .services.manual import hide_or_delete, rekeyed_original
 from .services.refresh import enqueue_enrichment
 
 # Bookkeeping fields are never locked (and never editable by hand).
@@ -36,19 +37,26 @@ class LockingAdmin(admin.ModelAdmin):
         raise NotImplementedError
 
 
-MANUAL_MODELS = (Credit, Story, Quote, Award)  # inline rows created/changed in the admin become is_manual
+MANUAL_MODELS = (Credit, Story, Quote, Award, ExternalLink)  # inline rows created/changed here become is_manual
+HIDEABLE_MODELS = (Credit, Quote, Award, ExternalLink)  # deleting an imported row hides it instead
 
 
 class ManualFormsetAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
-        if not issubclass(formset.model, tuple(MANUAL_MODELS)):
+        if not issubclass(formset.model, MANUAL_MODELS):
             return super().save_formset(request, form, formset, change)
         instances = formset.save(commit=False)
         for obj in instances:
+            tombstone = rekeyed_original(obj) if isinstance(obj, HIDEABLE_MODELS) else None
             obj.is_manual = True
             obj.save()
+            if tombstone:
+                tombstone.save()
         for obj in formset.deleted_objects:
-            obj.delete()
+            if isinstance(obj, HIDEABLE_MODELS):
+                hide_or_delete(obj)
+            else:
+                obj.delete()
         formset.save_m2m()
 
 
@@ -58,8 +66,8 @@ class CreditInline(admin.TabularInline):
     extra = 0
     # A full import can carry hundreds of credits; the album page only links to them.
     # Editing happens in CreditAdmin (searchable, filterable), which keeps the form small.
-    fields = ("role", "person", "track")
-    readonly_fields = ("role", "person", "track")
+    fields = ("role", "person", "track", "is_hidden")
+    readonly_fields = ("role", "person", "track", "is_hidden")
     show_change_link = True
     can_delete = False
 
@@ -69,15 +77,25 @@ class CreditInline(admin.TabularInline):
 
 @admin.register(Credit)
 class CreditAdmin(admin.ModelAdmin):
-    list_display = ("album", "role", "person", "track", "is_manual")
-    list_filter = ("role", "is_manual")
+    list_display = ("album", "role", "person", "track", "is_manual", "is_hidden")
+    list_filter = ("role", "is_manual", "is_hidden")
     search_fields = ("album__title", "person__name", "role")
     raw_id_fields = ("album", "track", "person", "place")
     readonly_fields = ("is_manual",)
 
     def save_model(self, request, obj, form, change):
+        tombstone = rekeyed_original(obj)
         obj.is_manual = True
         super().save_model(request, obj, form, change)
+        if tombstone:
+            tombstone.save()
+
+    def delete_model(self, request, obj):
+        hide_or_delete(obj)
+
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            hide_or_delete(obj)
 
 
 class StoryInline(admin.StackedInline):
@@ -105,6 +123,7 @@ class LinkInline(admin.TabularInline):
     model = ExternalLink
     fk_name = "album"
     extra = 0
+    readonly_fields = ("is_manual",)
 
 
 def _artist_inline(inline_cls):
