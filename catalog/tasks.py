@@ -13,7 +13,7 @@ from django.tasks import task
 from django.utils import timezone
 
 from .models import Album, Artist
-from .services.album_import import apply_vinyl_sides
+from .services.album_import import apply_vinyl_sides, refresh_album_core
 from .services.color import apply_cover_and_accent
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,8 @@ def register_artist_enricher(fn):
     return fn
 
 
+# First: the album's MusicBrainz core is refreshed before anything is derived from it.
+register_album_enricher(refresh_album_core)
 register_album_enricher(apply_vinyl_sides)
 register_album_enricher(apply_cover_and_accent)
 

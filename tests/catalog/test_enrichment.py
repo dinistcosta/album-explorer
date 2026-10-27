@@ -5,7 +5,7 @@ from django_tasks_db.models import DBTaskResult
 
 from catalog import tasks
 from catalog.services import refresh
-from catalog.services.album_import import apply_vinyl_sides
+from catalog.services.album_import import apply_vinyl_sides, refresh_album_core
 from catalog.services.color import apply_cover_and_accent
 from catalog.services.wikidata_import import import_album_wikidata, import_artist_wikidata
 
@@ -15,7 +15,7 @@ def boom(obj):
 
 
 def test_enrichers_registered_in_order():
-    assert tasks.ALBUM_ENRICHERS[:2] == [apply_vinyl_sides, apply_cover_and_accent]
+    assert tasks.ALBUM_ENRICHERS[:3] == [refresh_album_core, apply_vinyl_sides, apply_cover_and_accent]
     assert tasks.ARTIST_ENRICHERS[0] is import_artist_wikidata
     assert import_album_wikidata in tasks.ALBUM_ENRICHERS
 
@@ -103,3 +103,26 @@ def test_cover_archive_outage_is_not_an_error(db, imported_album, mb_fixtures, m
     assert imported_album.enriched_at is not None and imported_album.cover_url == ""
     assert not [r for r in caplog.records if r.levelname == "ERROR"]
     assert any("cover" in r.getMessage().lower() for r in caplog.records if r.levelname == "WARNING")
+
+
+def test_album_core_is_refreshed_by_enrichment(db, imported_album, mb_fixtures, monkeypatch):
+    from catalog.models import Album
+
+    Album.objects.filter(pk=imported_album.pk).update(title="Stale", year=1900)
+    monkeypatch.setattr(tasks, "ALBUM_ENRICHERS", [refresh_album_core])
+    tasks.enrich_album.call(imported_album.pk)
+    imported_album.refresh_from_db()
+    assert imported_album.title == "Nevermind" and imported_album.year == 1991
+
+
+def test_album_refresh_respects_locks_and_skips_stubs(db, imported_album, mb_fixtures, album_factory):
+    from catalog.models import Album
+
+    Album.objects.filter(pk=imported_album.pk).update(title="Mine", locked_fields=["title"])
+    imported_album.refresh_from_db()
+    refresh_album_core(imported_album)
+    assert imported_album.title == "Mine"
+    stub = album_factory(imported_at=None)
+    calls = mb_fixtures.calls.call_count
+    refresh_album_core(stub)  # a discography stub is imported on its first visit, not here
+    assert mb_fixtures.calls.call_count == calls

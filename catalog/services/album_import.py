@@ -207,3 +207,11 @@ def apply_vinyl_sides(album: Album) -> None:
             if track.side != side:
                 track.side = side
                 track.save(update_fields=["side"])
+
+
+def refresh_album_core(album: Album) -> None:
+    """Background refresh of an already-imported album's MusicBrainz core (stubs are imported on visit)."""
+    if album.imported_at is None:
+        return
+    import_album_core(str(album.mbid), foreground=False)
+    album.refresh_from_db()  # the enrichers after this one see the refreshed reference release
