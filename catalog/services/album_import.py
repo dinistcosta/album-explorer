@@ -186,11 +186,9 @@ def apply_vinyl_sides(album: Album) -> None:
         sides = assign_sides(ref_dict, mb.get_release(candidate["id"]))
         if sides:
             break
-    if not sides:
-        return
     with transaction.atomic():
         for track in reference.tracks.all():
-            side = sides.get(str(track.recording_mbid))
-            if side and track.side != side:
+            side = sides.get(str(track.recording_mbid)) if sides else None
+            if track.side != side:
                 track.side = side
                 track.save(update_fields=["side"])

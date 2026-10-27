@@ -9,6 +9,7 @@ import respx
 from catalog.models import Album, Credit, Place, Release, Track
 from catalog.services.album_import import apply_vinyl_sides, import_album_core
 from sources.http import SourceNotFound
+from sources.models import HttpCacheEntry
 from tests.ids import NEVERMIND_RG, NIRVANA
 
 FIX = Path(__file__).parent.parent / "fixtures" / "musicbrainz"
@@ -37,7 +38,8 @@ def mb_fixtures(no_sleep):
 
     with router:
         router.get(f"{BASE}release-group/{NEVERMIND_RG}").respond(200, json=load("nevermind_rg.json"))
-        router.get(url__regex=re.escape(BASE) + r"release/[0-9a-f-]{36}\?").mock(side_effect=full_release)
+        router.full_release = router.get(
+            url__regex=re.escape(BASE) + r"release/[0-9a-f-]{36}\?").mock(side_effect=full_release)
         router.get(url__regex=re.escape(BASE) + r"release\?").respond(200, json={
             "release-count": len(releases), "releases": releases})
         router.reference_id = choose_reference_release(releases)["id"]
@@ -112,8 +114,34 @@ def test_apply_vinyl_sides_sets_sides_on_match(db, mb_fixtures):
     ref_tracks = [t for m in ref["media"] for t in m["tracks"]]
     for vt, rt in zip((t for m in vinyl["media"] for t in m["tracks"]), ref_tracks):
         vt["recording"]["id"] = rt["recording"]["id"]
-    mb_fixtures.get(url__regex=re.escape(BASE) + r"release/[0-9a-f-]{36}\?").mock(
-        side_effect=lambda request: httpx.Response(200, json=vinyl))
+    mb_fixtures.full_release.side_effect = lambda request: httpx.Response(200, json=vinyl)
     apply_vinyl_sides(album)
     sides = list(album.reference_release.tracks.values_list("side", flat=True))
     assert sides == ["A"] * 6 + ["B"] * 6
+
+
+def test_reimport_with_dropped_track_keeps_manual_credit(db, mb_fixtures):
+    album = import_album_core(NEVERMIND_RG, foreground=True)
+    last = album.reference_release.tracks.last()
+    manual = Credit.objects.create(album=album, track=last, role="hand", is_manual=True)
+    original = mb_fixtures.full_release.side_effect
+
+    def without_last(request):
+        data = original(request).json()
+        data["media"][0]["tracks"] = data["media"][0]["tracks"][:-1]
+        return httpx.Response(200, json=data)
+
+    mb_fixtures.full_release.side_effect = without_last
+    HttpCacheEntry.objects.all().delete()  # force a real refetch
+    import_album_core(NEVERMIND_RG, foreground=True)
+    manual.refresh_from_db()
+    assert manual.track is None and album.reference_release.tracks.count() == 11
+
+
+def test_apply_vinyl_sides_resets_stale_sides_when_nothing_matches(db, mb_fixtures):
+    album = import_album_core(NEVERMIND_RG, foreground=True)
+    apply_vinyl_sides(album)
+    assert album.reference_release.tracks.filter(side="A").exists()
+    album.reference_release.tracks.last().delete()  # tracklist changed: counts now differ
+    apply_vinyl_sides(album)
+    assert not album.reference_release.tracks.exclude(side=None).exists()

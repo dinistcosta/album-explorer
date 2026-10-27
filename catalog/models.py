@@ -124,7 +124,7 @@ class Place(models.Model):
 
 class Credit(models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="credits")
-    track = models.ForeignKey(Track, null=True, blank=True, on_delete=models.CASCADE, related_name="credits")
+    track = models.ForeignKey(Track, null=True, blank=True, on_delete=models.SET_NULL, related_name="credits")
     person = models.ForeignKey(Artist, null=True, blank=True, on_delete=models.SET_NULL, related_name="credits")
     place = models.ForeignKey(Place, null=True, blank=True, on_delete=models.SET_NULL, related_name="credits")
     role = models.CharField(max_length=100)
