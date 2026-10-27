@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("search/", views.search, name="search"),
+    path("search/suggest/", views.suggest, name="suggest"),
     path("album/<uuid:mbid>/", views.album_detail, name="album_detail"),
     path("album/<uuid:mbid>/sections/", views.album_enrichment, name="album_enrichment"),
     path("artist/<uuid:mbid>/", views.artist_detail, name="artist_detail"),

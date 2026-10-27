@@ -73,9 +73,13 @@ def search_artists(query: str, limit: int = 8, foreground: bool = False) -> list
     return data.get("artists", [])
 
 
-def search_release_groups(query: str, limit: int = 24, foreground: bool = False) -> list[dict]:
+def search_release_groups(
+    query: str, limit: int = 24, foreground: bool = False, raw: bool = False
+) -> list[dict]:
+    """`raw=True` sends the query as Lucene (the caller has already escaped its user text)."""
     data = _get(
-        "release-group", {"query": escape_lucene(query), "limit": limit}, foreground=foreground
+        "release-group", {"query": query if raw else escape_lucene(query), "limit": limit},
+        foreground=foreground,
     )
     return data.get("release-groups", [])
 

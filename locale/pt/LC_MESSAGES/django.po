@@ -332,3 +332,18 @@ msgstr "violoncelo"
 
 msgid "harmonica"
 msgstr "harmónica"
+
+msgid "Suggestions"
+msgstr "Sugestões"
+
+msgid "Bands"
+msgstr "Bandas"
+
+msgid "Albums"
+msgstr "Álbuns"
+
+msgid "Nothing found for this search."
+msgstr "Nada encontrado para esta pesquisa."
+
+msgid "MusicBrainz didn't respond; showing what we already know."
+msgstr "A pesquisa no MusicBrainz não respondeu; mostramos o que já conhecemos."

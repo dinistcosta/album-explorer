@@ -126,3 +126,14 @@ a.chip:hover, a.chip:focus-visible { border-color: var(--accent, currentColor); 
 .tile-year { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); }
 .tile:hover .tile-title, .tile:focus-visible .tile-title { color: var(--accent); }
 @media (max-width: 760px) { .page-artist .a-hero { grid-template-columns: 1fr; } .artist-photo { width: 70%; } }
+.header-search { position: relative; flex: 1; max-width: 420px; }
+.header-search .search input { font-size: 15px; padding: 8px 12px; }
+.header-search .search button { padding: 0 12px; }
+.suggestions { position: relative; width: 100%; max-width: 640px; }
+.header-search .suggestions { position: absolute; top: 100%; left: 0; z-index: 5; }
+.suggest-list { list-style: none; margin: 4px 0 0; padding: 4px 0; background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; text-align: left; }
+.suggest-list li { padding: 6px 14px; display: flex; justify-content: space-between; gap: 12px; }
+.band-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+.band-list li { display: flex; justify-content: space-between; gap: 12px; max-width: 640px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.notice { border-left: 3px solid var(--accent); padding: 8px 12px; background: var(--bg-2); }
+@media (max-width: 640px) { .site-header { flex-wrap: wrap; } .header-search { order: 3; flex-basis: 100%; max-width: none; } }

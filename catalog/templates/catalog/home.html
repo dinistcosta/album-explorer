@@ -5,9 +5,10 @@
 <section class="home-hero">
   <p class="label">{% translate "A museum of albums" %}</p>
   <h1>{% translate "Search for a band or an album" %}</h1>
-  <form class="search" role="search" method="get">
-    <input type="search" name="q" autocomplete="off" aria-label="{% translate 'Search for a band or an album' %}" placeholder="{% translate 'Search for a band or an album' %}">
+  <form class="search" role="search" method="get" action="{% url 'search' %}">
+    <input type="search" name="q" autocomplete="off" hx-get="{% url 'suggest' %}" hx-trigger="input changed delay:250ms" hx-target="#suggestions" aria-controls="suggestions" aria-label="{% translate 'Search for a band or an album' %}" placeholder="{% translate 'Search for a band or an album' %}">
     <button type="submit">{% translate "Search" %}</button>
   </form>
+  <div id="suggestions" class="suggestions" aria-live="polite"></div>
 </section>
 {% endblock %}

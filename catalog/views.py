@@ -11,6 +11,7 @@ from .services.artist_import import discography_sections, header_cover_album, im
 from .services.stories import _country_name
 from .services.links import discogs_search_url, listen_and_buy
 from .services.stories import select_story
+from .services.search import search as run_search, suggest as run_suggest
 from .services.refresh import enqueue_enrichment, needs_enrichment
 
 MAX_POLLS = 15
@@ -18,6 +19,16 @@ MAX_POLLS = 15
 
 def home(request):
     return render(request, "catalog/home.html")
+
+
+def search(request):
+    q = request.GET.get("q", "").strip()[:200]
+    results = run_search(q)
+    return render(request, "catalog/search.html", {"q": q, "results": results, "searched": bool(q)})
+
+
+def suggest(request):
+    return render(request, "catalog/_suggestions.html", {"s": run_suggest(request.GET.get("q", "")[:200])})
 
 
 def _tracks_by_side(album):
