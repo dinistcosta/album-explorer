@@ -110,3 +110,10 @@ def mb_fixtures(no_sleep):
         router.reference_id = choose_reference_release(releases)["id"]
         router.vinyl_ids = vinyl_ids
         yield router
+
+
+@pytest.fixture
+def imported_album(db, mb_fixtures):
+    from catalog.services.album_import import import_album_core
+
+    return import_album_core(NEVERMIND_RG, foreground=True)

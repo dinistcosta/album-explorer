@@ -105,3 +105,10 @@ def test_timeout_raises_source_unavailable(db):
     with pytest.raises(SourceUnavailable):
         fetch("musicbrainz", URL)
     assert route.call_count == 3
+
+
+@respx.mock
+def test_follows_redirects(db):
+    respx.get("https://coverartarchive.org/a").respond(307, headers={"Location": "https://archive.org/b"})
+    respx.get("https://archive.org/b").respond(200, content=b"IMG")
+    assert fetch("coverart", "https://coverartarchive.org/a", binary=True) == b"IMG"

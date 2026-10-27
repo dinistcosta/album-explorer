@@ -4,13 +4,7 @@ import respx
 from django.utils import timezone
 
 from catalog.models import Release, Track
-from catalog.services.album_import import import_album_core
 from tests.ids import NEVERMIND_RG
-
-
-@pytest.fixture
-def imported_album(db, mb_fixtures):
-    return import_album_core(NEVERMIND_RG, foreground=True)
 
 
 def make_album(album_factory, sides):
