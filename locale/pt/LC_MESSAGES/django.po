@@ -269,3 +269,66 @@ msgstr "Compilações"
 
 msgid "Other"
 msgstr "Outros"
+
+msgid "vocals"
+msgstr "voz"
+
+msgid "lead vocals"
+msgstr "voz principal"
+
+msgid "backing vocals"
+msgstr "coros"
+
+msgid "background vocals"
+msgstr "coros"
+
+msgid "guitar"
+msgstr "guitarra"
+
+msgid "electric guitar"
+msgstr "guitarra elétrica"
+
+msgid "acoustic guitar"
+msgstr "guitarra acústica"
+
+msgid "bass guitar"
+msgstr "baixo"
+
+msgid "bass"
+msgstr "baixo"
+
+msgid "drums"
+msgstr "bateria"
+
+msgid "drums (drum set)"
+msgstr "bateria"
+
+msgid "percussion"
+msgstr "percussão"
+
+msgid "keyboard"
+msgstr "teclados"
+
+msgid "piano"
+msgstr "piano"
+
+msgid "synthesizer"
+msgstr "sintetizador"
+
+msgid "organ"
+msgstr "órgão"
+
+msgid "saxophone"
+msgstr "saxofone"
+
+msgid "trumpet"
+msgstr "trompete"
+
+msgid "violin"
+msgstr "violino"
+
+msgid "cello"
+msgstr "violoncelo"
+
+msgid "harmonica"
+msgstr "harmónica"

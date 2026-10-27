@@ -95,8 +95,11 @@ def test_members_merge_duplicate_relations(imported_nirvana):
 
 def test_core_fields_links_genres_stubs(db, nirvana_respx):
     Genre.objects.create(slug="grunge", name="Grunge")
+    Genre.objects.create(slug="punk-rock", name="Punk rock")
+    Artist.objects.create(mbid=NIRVANA, name="Nirvana", country="XX", locked_fields=["country"])
     artist = import_artist_core(NIRVANA, foreground=True)
-    assert artist.begin_year == 1987 and artist.end_year == 1994 and artist.country == "US"
+    assert artist.country == "XX"  # locked field survives the import
+    assert artist.begin_year == 1987 and artist.end_year == 1994 
     assert artist.wikidata_id == "Q11649" and artist.discogs_id == "125246"
     assert artist.imported_at is not None
     assert ExternalLink.objects.filter(artist=artist, kind="official").exists()
@@ -104,7 +107,7 @@ def test_core_fields_links_genres_stubs(db, nirvana_respx):
     assert Album.objects.filter(artist=artist).count() == 100
     nevermind = Album.objects.get(title="Nevermind")
     assert nevermind.year == 1991 and nevermind.imported_at is None and nevermind.artist == artist
-    assert set(ArtistGenre.objects.filter(artist=artist).values_list("genre__slug", flat=True)) <= {"grunge"}
+    assert set(ArtistGenre.objects.filter(artist=artist).values_list("genre__slug", flat=True)) == {"grunge", "punk-rock"}
 
 
 def test_stubs_do_not_overwrite_imported_albums(db, nirvana_respx, album_factory):
@@ -217,3 +220,22 @@ def test_album_page_links_to_band(client, album_factory):
     album = album_factory(imported_at=timezone.now())
     html = client.get(f"/pt/album/{album.mbid}/").content.decode()
     assert f'href="/pt/artist/{album.artist.mbid}/"' in html
+
+
+def test_instruments_translated_on_pt_page_only(client, imported_nirvana):
+    pt = client.get(f"/pt/artist/{NIRVANA}/").content.decode()
+    en = client.get(f"/en/artist/{NIRVANA}/").content.decode()
+    assert "bateria" in pt and "drums" not in pt
+    assert "drums" in en and "bateria" not in en
+
+
+def test_unknown_instrument_falls_back_to_raw():
+    from catalog.services.instruments import instrument_label
+    assert instrument_label("theremin") == "theremin"
+
+
+def test_stub_album_with_source_down_is_503(client, album_factory, no_sleep):
+    album = album_factory(imported_at=None)
+    with respx.mock:
+        respx.get(url__regex=r".*").respond(503)
+        assert client.get(f"/pt/album/{album.mbid}/").status_code == 503

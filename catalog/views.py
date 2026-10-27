@@ -68,6 +68,13 @@ def _sections_context(album, n=0):
     }
 
 
+def _poll_n(request) -> int:
+    try:
+        return max(0, int(request.GET.get("n", 0)))
+    except ValueError:
+        return 0
+
+
 def album_detail(request, mbid):
     album = Album.objects.select_related("artist", "reference_release").filter(mbid=mbid).first()
     if album is None or album.imported_at is None:  # None: a stub created from an artist's discography
@@ -96,10 +103,7 @@ def album_enrichment(request, mbid):
     album = get_object_or_404(Album, mbid=mbid)
     if needs_enrichment(album):
         enqueue_enrichment(album)
-    try:
-        n = max(0, int(request.GET.get("n", 0)))
-    except ValueError:
-        n = 0
+    n = _poll_n(request)
     return render(request, "catalog/_album_sections.html", {**_links_context(album), **_sections_context(album, n), "oob_links": True})
 
 
@@ -161,8 +165,5 @@ def artist_enrichment(request, mbid):
     artist = get_object_or_404(Artist, mbid=mbid)
     if needs_enrichment(artist):
         enqueue_enrichment(artist)
-    try:
-        n = max(0, int(request.GET.get("n", 0)))
-    except ValueError:
-        n = 0
+    n = _poll_n(request)
     return render(request, "catalog/_artist_sections.html", {**_artist_context(artist, n), "oob_photo": True})

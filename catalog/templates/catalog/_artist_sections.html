@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n catalog_extras %}
 <div id="artist-sections" class="sections"{% if polling %} hx-get="{% url 'artist_enrichment' artist.mbid %}?n={{ next_n }}" hx-trigger="load delay:2s" hx-swap="outerHTML"{% endif %}>
   {% if oob_photo %}<div id="artist-photo" hx-swap-oob="true">{% include "catalog/_artist_photo.html" %}</div>{% endif %}
   <div class="a-liner stack">
@@ -48,7 +48,7 @@
   <div class="box members">
     <h3>{% translate "Members" %}</h3>
     <ul>
-      {% for m in members %}<li><a href="{{ m.member.get_absolute_url }}">{{ m.member.name }}</a>{% if m.instruments %} <span class="muted">{{ m.instruments|join:", " }}</span>{% endif %}{% if m.begin_year or m.end_year %} <span class="years">{{ m.begin_year|default_if_none:"" }}–{{ m.end_year|default_if_none:"" }}</span>{% endif %}</li>{% endfor %}
+      {% for m in members %}<li><a href="{{ m.member.get_absolute_url }}">{{ m.member.name }}</a>{% if m.instruments %} <span class="muted">{{ m.instruments|instrument_labels }}</span>{% endif %}{% if m.begin_year or m.end_year %} <span class="years">{{ m.begin_year|default_if_none:"" }}–{{ m.end_year|default_if_none:"" }}</span>{% endif %}</li>{% endfor %}
     </ul>
     <div class="source">{% translate "Source" %}: MusicBrainz</div>
   </div>
