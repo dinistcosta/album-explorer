@@ -48,12 +48,33 @@ def _classified(relations) -> dict[str, tuple[str, str]]:
     return found
 
 
+MAX_STREAMING_RELEASES = 3
+
+
+def _streaming_candidates(album: Album) -> list:
+    """Streaming links in MusicBrainz live on digital releases (often not the reference one, which
+    may be a cassette): official digital releases first, newest-known markets last, a few at most."""
+    digital = [r for r in album.releases.all() if "Digital Media" in (r.formats or [])]
+    digital.sort(key=lambda r: (r.status != "Official", r.country not in ("XW", "US"), r.date or "9999"))
+    return digital[:MAX_STREAMING_RELEASES]
+
+
+def _has(found: dict, service: str) -> bool:
+    return any(kind == "listen" and svc == service for kind, svc in found.values())
+
+
 def import_album_links(album: Album) -> None:
     found = _classified(mb.get_release_group(str(album.mbid)).get("relations"))
-    if not any(kind == "listen" for kind, _ in found.values()) and album.reference_release:
-        # Only the reference release: one extra request, not one per edition.
-        for url, kind in _classified(mb.get_release(str(album.reference_release.mbid)).get("relations")).items():
-            found.setdefault(url, kind)
+    if not any(kind == "listen" for kind, _ in found.values()):
+        candidates = _streaming_candidates(album)
+        if album.reference_release and all(r.pk != album.reference_release_id for r in candidates):
+            candidates.append(album.reference_release)
+        # A handful of requests at most (never one per edition); stop once the main services are covered.
+        for release in candidates:
+            for url, kind in _classified(mb.get_release(str(release.mbid)).get("relations")).items():
+                found.setdefault(url, kind)
+            if _has(found, "spotify") and _has(found, "apple_music"):
+                break
     with transaction.atomic():
         for url, (kind, service) in found.items():
             ExternalLink.objects.update_or_create(

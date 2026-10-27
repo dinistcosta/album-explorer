@@ -82,3 +82,29 @@ def test_links_updated_and_stale_removed(db, no_sleep, album_factory, monkeypatc
     import_album_links(album)
     import_album_links(album)
     assert sorted(album.links.values_list("service", flat=True)) == ["apple_music", "youtube"]
+
+
+def test_streaming_links_come_from_digital_releases_not_the_cassette_reference(imported_album, monkeypatch):
+    """Real shape: the reference release is a physical edition with only a Discogs relation; the Spotify and
+    Apple Music relations ('free streaming' / 'streaming') sit on Digital Media releases."""
+    album = imported_album
+    digital = [r for r in album.releases.all() if "Digital Media" in r.formats]
+    assert len(digital) >= 2
+    rels = {str(d.mbid): rg([("free streaming", f"https://open.spotify.com/album/{i}?si=abc")])
+            for i, d in enumerate(digital)}
+    first = sorted(digital, key=lambda r: (r.status != "Official", r.country not in ("XW", "US"), r.date or "9999"))[0]
+    rels[str(first.mbid)] = rg([("streaming", "https://music.apple.com/de/album/1440783617"),
+                                ("free streaming", "https://open.spotify.com/album/abc?si=1")])
+    calls = []
+
+    def get_release(mbid):
+        calls.append(mbid)
+        return rels.get(mbid, rg([("discogs", "https://www.discogs.com/release/1")]))
+
+    monkeypatch.setattr("catalog.services.links.mb.get_release_group", lambda mbid: rg([
+        ("allmusic", "https://www.allmusic.com/album/mw0000185616")]))
+    monkeypatch.setattr("catalog.services.links.mb.get_release", get_release)
+    import_album_links(album)
+    assert sorted(album.links.values_list("service", flat=True)) == ["apple_music", "spotify"]
+    assert calls == [str(first.mbid)]  # stopped as soon as Spotify and Apple Music were covered
+    assert len(calls) <= 3
