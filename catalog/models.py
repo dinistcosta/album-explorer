@@ -3,6 +3,12 @@ from django.db import models
 from catalog.services.text import normalize
 
 
+def _sync_search_name(kwargs, source_field):
+    uf = kwargs.get("update_fields")
+    if uf is not None and source_field in uf and "search_name" not in uf:
+        kwargs["update_fields"] = [*uf, "search_name"]
+
+
 class LockableModel(models.Model):
     locked_fields = models.JSONField(default=list, blank=True)
 
@@ -39,6 +45,7 @@ class Artist(LockableModel):
 
     def save(self, *args, **kwargs):
         self.search_name = normalize(self.name)
+        _sync_search_name(kwargs, "name")
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -67,6 +74,7 @@ class Album(LockableModel):
 
     def save(self, *args, **kwargs):
         self.search_name = normalize(self.title)
+        _sync_search_name(kwargs, "title")
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -142,6 +150,7 @@ class Genre(models.Model):
 
     def save(self, *args, **kwargs):
         self.search_name = normalize(self.name)
+        _sync_search_name(kwargs, "name")
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -238,7 +247,14 @@ class ExternalLink(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["album", "artist", "url"], name="uniq_link_album_artist_url")
+            models.UniqueConstraint(
+                fields=["album", "url"], condition=models.Q(artist__isnull=True),
+                name="uniq_link_album_url",
+            ),
+            models.UniqueConstraint(
+                fields=["artist", "url"], condition=models.Q(album__isnull=True),
+                name="uniq_link_artist_url",
+            ),
         ]
 
 
