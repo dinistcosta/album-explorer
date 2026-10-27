@@ -3,8 +3,9 @@ from django.utils import timezone
 
 from catalog.models import Album, Artist, Credit, Place, Release, Track
 from sources import musicbrainz as mb
+from sources.http import SourceNotFound
 
-from .editions import assign_sides, choose_reference_release, vinyl_candidates
+from .editions import assign_sides, choose_reference_release, own_sides, vinyl_candidates
 
 MAX_VINYL_CANDIDATES = 3
 
@@ -170,7 +171,7 @@ def import_album_core(mbid: str, *, foreground: bool) -> Album:
 def _as_release_dict(release: Release) -> dict:
     return {
         "id": str(release.mbid), "date": release.date, "status": release.status,
-        "media": [{"format": f} for f in release.formats],
+        "country": release.country, "media": [{"format": f} for f in release.formats],
     }
 
 
@@ -178,16 +179,22 @@ def apply_vinyl_sides(album: Album) -> None:
     reference = album.reference_release
     if reference is None:
         return
-    ref_dict = {"media": [{"tracks": [
+    tracks = [
         {"number": t.number, "title": t.title, "recording": {"id": str(t.recording_mbid)}}
         for t in reference.tracks.all() if t.recording_mbid
-    ]}]}
-    others = [_as_release_dict(r) for r in album.releases.exclude(pk=reference.pk)]
-    sides = None
-    for candidate in vinyl_candidates(others)[:MAX_VINYL_CANDIDATES]:
-        sides = assign_sides(ref_dict, mb.get_release(candidate["id"]))
-        if sides:
-            break
+    ]
+    ref_dict = {"media": [{"format": f, "tracks": tracks if i == 0 else []}
+                          for i, f in enumerate(reference.formats or [""])]}
+    sides = own_sides(ref_dict)  # the reference is itself a vinyl numbered A1, A2, B1…
+    if not sides:
+        others = [_as_release_dict(r) for r in album.releases.exclude(pk=reference.pk)]
+        for candidate in vinyl_candidates(others)[:MAX_VINYL_CANDIDATES]:
+            try:
+                sides = assign_sides(ref_dict, mb.get_release(candidate["id"]))
+            except SourceNotFound:  # a release merged away since the browse: try the next one
+                continue
+            if sides:
+                break
     with transaction.atomic():
         for track in reference.tracks.all():
             side = sides.get(str(track.recording_mbid)) if sides else None

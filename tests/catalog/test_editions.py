@@ -1,8 +1,16 @@
-from catalog.services.editions import assign_sides, choose_reference_release, vinyl_candidates
+import json
+from pathlib import Path
+
+from catalog.services.editions import assign_sides, choose_reference_release, own_sides, vinyl_candidates
+from tests.ids import NEVERMIND_REFERENCE
+
+FIX = Path(__file__).parent.parent / "fixtures" / "musicbrainz"
 
 
-def rel(id, date="", status="Official", formats=("CD",)):
+def rel(id, date="", status="Official", formats=("CD",), country=None):
     r = {"id": id, "status": status, "media": [{"format": f} for f in formats]}
+    if country:
+        r["country"] = country
     if date:
         r["date"] = date
     return r
@@ -28,8 +36,49 @@ def test_falls_back_to_all_when_none_official():
     assert choose_reference_release(rels)["id"] == "a"
 
 
-def test_partial_date_sorts_before_later_full_date():
-    assert choose_reference_release([rel("x", "1991-10-01"), rel("y", "1991")])["id"] == "y"
+def test_partial_year_sorts_as_last_day_of_the_year():
+    # "1991" could be any day of 1991, so a full 1991-10-01 date is earlier.
+    assert choose_reference_release([rel("x", "1991-10-01"), rel("y", "1991")])["id"] == "x"
+    assert choose_reference_release([rel("x", "1991-12-31"), rel("y", "1991")])["id"] == "x"
+
+
+def test_partial_month_sorts_as_last_day_of_the_month():
+    assert choose_reference_release([rel("y", "1991-09"), rel("x", "1991-09-24")])["id"] == "x"
+    assert choose_reference_release([rel("y", "1991-09"), rel("x", "1991-10-01")])["id"] == "y"
+    assert choose_reference_release([rel("y", "1992-02"), rel("x", "1992-02-29")])["id"] == "x"
+
+
+def test_same_day_prefers_worldwide_then_us_then_gb():
+    rels = [rel("a", "1991-09-24", country="DE"), rel("b", "1991-09-24", country="GB"),
+            rel("c", "1991-09-24", country="US"), rel("d", "1991-09-24", country="XW")]
+    assert choose_reference_release(rels)["id"] == "d"
+    assert choose_reference_release(rels[:3])["id"] == "c"
+    assert choose_reference_release(rels[:2])["id"] == "b"
+    assert choose_reference_release([rel("b", "1991", country="DE"), rel("a", "1991")])["id"] == "a"
+
+
+def test_real_nevermind_browse_picks_the_recorded_reference():
+    releases = json.loads((FIX / "nevermind_releases.json").read_text())["releases"]
+    chosen = choose_reference_release(releases)
+    assert chosen["id"] == NEVERMIND_REFERENCE
+    assert chosen["date"] == "1991-09-24" and chosen["country"] == "US"
+    recorded = json.loads((FIX / "nevermind_reference.json").read_text())
+    assert recorded["id"] == NEVERMIND_REFERENCE
+
+
+def test_own_sides_from_vinyl_with_lettered_numbers():
+    r = release_with(["r1", "r2", "r3"], numbers=["A1", "A2", "B1"])
+    r["media"][0]["format"] = '12" Vinyl'
+    assert own_sides(r) == {"r1": "A", "r2": "A", "r3": "B"}
+
+
+def test_own_sides_none_for_plain_numbers_or_non_vinyl():
+    plain = release_with(["r1", "r2"])
+    plain["media"][0]["format"] = "Vinyl"
+    assert own_sides(plain) is None
+    cd = release_with(["r1"], numbers=["A1"])
+    cd["media"][0]["format"] = "CD"
+    assert own_sides(cd) is None
 
 
 def test_missing_date_sorts_last():

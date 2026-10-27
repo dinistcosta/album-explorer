@@ -118,3 +118,40 @@ def test_apply_vinyl_sides_resets_stale_sides_when_nothing_matches(db, mb_fixtur
     album.reference_release.tracks.last().delete()  # tracklist changed: counts now differ
     apply_vinyl_sides(album)
     assert not album.reference_release.tracks.exclude(side=None).exists()
+
+
+def test_reference_is_the_rule_chosen_release_with_its_own_tracklist(db, mb_fixtures):
+    from tests.ids import NEVERMIND_REFERENCE
+
+    album = import_album_core(NEVERMIND_RG, foreground=True)
+    ref = album.reference_release
+    assert str(ref.mbid) == NEVERMIND_REFERENCE and ref.date == "1991-09-24" and ref.country == "US"
+    assert list(ref.tracks.values_list("number", flat=True)) == [str(i) for i in range(1, 13)]
+
+
+def test_lettered_vinyl_reference_takes_its_own_sides(db, mb_fixtures):
+    album = import_album_core(NEVERMIND_RG, foreground=True)
+    for i, track in enumerate(album.reference_release.tracks.all()):
+        track.number = f"{'AB'[i // 6]}{i % 6 + 1}"
+        track.save()
+    calls_before = mb_fixtures.full_release.call_count
+    apply_vinyl_sides(album)
+    assert mb_fixtures.full_release.call_count == calls_before  # no other edition fetched
+    assert list(album.reference_release.tracks.values_list("side", flat=True)) == ["A"] * 6 + ["B"] * 6
+
+
+def test_vinyl_candidate_gone_from_musicbrainz_is_skipped(db, mb_fixtures):
+    from tests.ids import NEVERMIND_PROMO_VINYL
+
+    album = import_album_core(NEVERMIND_RG, foreground=True)
+    original = mb_fixtures.full_release.side_effect
+
+    def promo_gone(request):
+        if NEVERMIND_PROMO_VINYL in str(request.url):
+            return httpx.Response(404, json={"error": "Not Found"})
+        return original(request)
+
+    mb_fixtures.full_release.side_effect = promo_gone
+    HttpCacheEntry.objects.all().delete()
+    apply_vinyl_sides(album)  # the other two candidates are plain-numbered: no sides, no error
+    assert not album.reference_release.tracks.exclude(side=None).exists()

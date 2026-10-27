@@ -88,19 +88,23 @@ def album_factory(db, artist_factory):
 
 @pytest.fixture
 def mb_fixtures(no_sleep):
-    """The recorded browse list's rule-chosen reference/vinyl ids differ from the recorded
-    full-release fixtures, so full-release requests are answered with the recorded reference
-    (or vinyl) payload re-labelled with the requested id."""
+    """Recorded Nevermind payloads. Full-release requests are answered with the fixture recorded
+    for that exact id (nevermind_reference.json, nevermind_vinyl.json or release_<id>.json); any
+    other id gets a 404, so nothing is relabelled."""
     from catalog.services.editions import choose_reference_release, vinyl_candidates
 
+    from tests.ids import NEVERMIND_REFERENCE, NEVERMIND_VINYL
+
     releases = load("nevermind_releases.json")["releases"]
-    vinyl_ids = {r["id"] for r in vinyl_candidates(releases)}
+    named = {NEVERMIND_REFERENCE: "nevermind_reference.json", NEVERMIND_VINYL: "nevermind_vinyl.json"}
     router = respx.mock(assert_all_called=False)
 
     def full_release(request):
         rid = request.url.path.rsplit("/", 1)[1]
-        data = load("nevermind_vinyl.json" if rid in vinyl_ids else "nevermind_reference.json")
-        return httpx.Response(200, json={**data, "id": rid})
+        path = FIX / named.get(rid, f"release_{rid}.json")
+        if not path.exists():
+            return httpx.Response(404, json={"error": "Not Found"})
+        return httpx.Response(200, content=path.read_bytes(), headers={"Content-Type": "application/json"})
 
     with router:
         router.get(f"{BASE}release-group/{NEVERMIND_RG}").respond(200, json=load("nevermind_rg.json"))
@@ -109,7 +113,7 @@ def mb_fixtures(no_sleep):
         router.get(url__regex=re.escape(BASE) + r"release\?").respond(200, json={
             "release-count": len(releases), "releases": releases})
         router.reference_id = choose_reference_release(releases)["id"]
-        router.vinyl_ids = vinyl_ids
+        router.vinyl_ids = {r["id"] for r in vinyl_candidates(releases)}
         yield router
 
 
