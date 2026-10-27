@@ -50,10 +50,11 @@ def _valid(mbid) -> bool:
 def _upsert_artist(data: dict) -> Artist | None:
     if not _valid(data.get("id")):
         return None
-    artist, created = Artist.objects.get_or_create(mbid=uuid.UUID(data["id"]), defaults={"name": data.get("name", "")[:300]})
+    name = (data.get("name") or "")[:300]
+    artist, created = Artist.objects.get_or_create(mbid=uuid.UUID(data["id"]), defaults={"name": name})
     values = {
-        "name": data.get("name", "")[:300],
-        "sort_name": data.get("sort-name", "")[:300],
+        "name": name,
+        "sort_name": (data.get("sort-name") or "")[:300],
         "country": (data.get("country") or "")[:8],
         "artist_type": (data.get("type") or "")[:32],
     }
@@ -75,10 +76,11 @@ def _upsert_album(data: dict) -> Album | None:
     artist = None
     if credit and isinstance(credit[0].get("artist"), dict):
         artist = _upsert_artist(credit[0]["artist"])
-    credit_text = "".join(f"{c.get('name', '')}{c.get('joinphrase', '')}" for c in credit)[:500]
-    album, created = Album.objects.get_or_create(mbid=uuid.UUID(data["id"]), defaults={"title": data.get("title", "")[:500]})
+    credit_text = "".join(f"{c.get('name') or ''}{c.get('joinphrase') or ''}" for c in credit)[:500]
+    title = (data.get("title") or "")[:500]
+    album, created = Album.objects.get_or_create(mbid=uuid.UUID(data["id"]), defaults={"title": title})
     values = {
-        "title": data.get("title", "")[:500],
+        "title": title,
         "primary_type": (data.get("primary-type") or "")[:32],
         "secondary_types": data.get("secondary-types") or [],
         "artist_credit": credit_text,

@@ -1,4 +1,4 @@
-{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+{% load i18n static catalog_extras %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
 <meta charset="utf-8">
@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="{% static 'css/site.css' %}">
 <script src="{% static 'js/htmx.min.js' %}" defer></script>
 </head>
-<body style="--accent: {% block accent %}#c8a45a{% endblock %}">
+<body style="--accent: {% filter accent %}{% block accent %}{% endblock %}{% endfilter %}">
 <header class="site-header">
   <a class="brand" href="{% url 'home' %}">Album Explorer</a>
   {% if request.resolver_match.url_name != "home" %}

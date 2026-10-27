@@ -52,6 +52,8 @@ def _replace_awards(owner_field: str, owner, awards, labels: dict) -> None:
         if qid in kept:
             continue
         name_en, name_pt = _label(labels.get(qid), "en"), _label(labels.get(qid), "pt")
+        if not (name_en or name_pt):  # nothing to show in either language
+            continue
         rows.append(Award(
             **{owner_field: owner}, wikidata_id=qid, year=year,
             name_en=name_en or name_pt, name_pt=name_pt or name_en,

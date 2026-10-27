@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 
-from sources.http import SourceUnavailable
+from sources.http import SourceNotFound, SourceUnavailable
 
 from .models import Album, Artist, Award, Credit, ExternalLink, Genre, Quote, Story
 from .services.album_import import import_album_core
@@ -146,6 +146,13 @@ class AlbumAdmin(ManualFormsetAdmin, LockingAdmin):
                 self.message_user(
                     request,
                     _("Could not refresh “%(title)s”: source unavailable.") % {"title": album.title},
+                    messages.ERROR,
+                )
+                continue
+            except SourceNotFound:
+                self.message_user(
+                    request,
+                    _("Could not refresh “%(title)s”: MusicBrainz no longer has this album.") % {"title": album.title},
                     messages.ERROR,
                 )
                 continue

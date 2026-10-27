@@ -76,8 +76,8 @@ def apply_cover_and_accent(album) -> None:
     values = {"cover_url": cover_url(str(album.mbid))}
     try:
         values["accent_color"] = extract_accent(data)
-    except (OSError, ValueError):
-        pass  # unreadable image: keep the cover, leave the default accent
+    except (OSError, ValueError, Image.DecompressionBombError):
+        pass  # unreadable or oversized image: keep the cover, leave the default accent
     changed = album.apply_source_fields(**values)
     if changed:
         album.save(update_fields=changed)

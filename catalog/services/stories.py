@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _, override
 
 from catalog.models import Album, Artist, Story
-from catalog.services.text import normalize
+from catalog.services.text import normalize, strip_discogs_markup
 from catalog.tasks import register_album_enricher, register_artist_enricher
 from sources import discogs, lastfm, wikidata, wikipedia
 from sources import musicbrainz as mb
@@ -121,7 +121,9 @@ def import_lastfm_stories(entity: Album | Artist) -> None:
         text = texts[lang]
         if not text or (lang == "pt" and text == texts["en"]):
             continue
-        rows.append((lang, infos[lang].get("url") or "", [{"heading": None, "paragraphs": text.split("\n\n")}]))
+        url = infos[lang].get("url") or ""
+        url = url if url.startswith("https://") else ""  # only a safe link is shown next to the story
+        rows.append((lang, url, [{"heading": None, "paragraphs": text.split("\n\n")}]))
 
     listeners = None
     if is_album:
@@ -171,7 +173,7 @@ def import_discogs_notes(album: Album) -> None:
     release = discogs.get_release(master["main_release"]) if master.get("main_release") else None
     values = {"discogs_master_id": master_id, "discogs_styles": list(master.get("styles") or [])}
     if release is not None:
-        values["discogs_notes"] = (release.get("notes") or "").strip()
+        values["discogs_notes"] = strip_discogs_markup(release.get("notes") or "")
     with transaction.atomic():
         changed = album.apply_source_fields(**values)
         if changed:
@@ -303,7 +305,7 @@ class StoryView:
 
     @property
     def notes_paragraphs(self) -> list[str]:
-        return [p.strip() for p in self.notes.splitlines() if p.strip()]
+        return [p.strip() for p in strip_discogs_markup(self.notes).splitlines() if p.strip()]
 
 
 def _view(story: Story, lang: str) -> StoryView:

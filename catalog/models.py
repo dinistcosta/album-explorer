@@ -1,7 +1,12 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 
 from catalog.services.text import normalize
+
+
+ACCENT_RE = r"^#[0-9a-fA-F]{6}$"
+accent_validator = RegexValidator(ACCENT_RE, "Use a #rrggbb colour.")
 
 
 def _sync_search_name(kwargs, source_field):
@@ -69,7 +74,7 @@ class Album(LockableModel):
         "Release", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     cover_url = models.URLField(max_length=500, blank=True)
-    accent_color = models.CharField(max_length=16, blank=True, default="")
+    accent_color = models.CharField(max_length=16, blank=True, default="", validators=[accent_validator])
     wikidata_id = models.CharField(max_length=32, blank=True)
     discogs_master_id = models.CharField(max_length=32, blank=True)
     discogs_styles = models.JSONField(default=list, blank=True)

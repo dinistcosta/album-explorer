@@ -1,3 +1,5 @@
+import re
+
 from django import template
 
 register = template.Library()
@@ -31,3 +33,15 @@ def instrument_labels(instruments):
     from catalog.services.instruments import instrument_label
 
     return ", ".join(str(instrument_label(i)) for i in instruments or [])
+
+
+DEFAULT_ACCENT = "#c8a45a"
+
+
+@register.filter
+def accent(value):
+    """The page accent: a #rrggbb value as given, anything else (it ends up in a style attribute) the default."""
+    from catalog.models import ACCENT_RE
+
+    value = str(value or "").strip()
+    return value if re.fullmatch(ACCENT_RE, value) else DEFAULT_ACCENT
