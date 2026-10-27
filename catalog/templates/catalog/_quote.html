@@ -1,0 +1,2 @@
+{% load i18n %}<blockquote><p>“{{ q.text }}”</p>{% if q.speaker %}<footer>{{ q.speaker }}</footer>{% endif %}
+  <div class="source">{% translate "Source" %}: {% if q.source_url %}<a href="{{ q.source_url }}" rel="noopener" target="_blank">{{ q.source_label|default:q.source_url }}</a>{% else %}{{ q.source_label }}{% endif %}{% if q.origin == "wikiquote" %} · Wikiquote · CC BY-SA 4.0{% elif q.origin == "wikipedia" %} · Wikipedia · CC BY-SA 4.0{% endif %}</div></blockquote>

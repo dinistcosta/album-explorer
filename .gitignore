@@ -1,1 +1,6 @@
 .superpowers/
+.venv/
+db.sqlite3
+__pycache__/
+staticfiles/
+.env

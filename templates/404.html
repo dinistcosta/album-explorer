@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Not found" %} · Album Explorer{% endblock %}
+{% block content %}
+<section class="error-page">
+  <p class="label">404</p>
+  <h1>{% translate "This page is not in the museum" %}</h1>
+  <p><a href="{% url 'home' %}">{% translate "Back to the start" %}</a></p>
+</section>
+{% endblock %}

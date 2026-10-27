@@ -1,0 +1,39 @@
+{% load i18n static catalog_extras %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Album Explorer{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+<script src="{% static 'js/htmx.min.js' %}" defer></script>
+</head>
+<body style="--accent: {% filter accent %}{% block accent %}{% endblock %}{% endfilter %}">
+<header class="site-header">
+  <a class="brand" href="{% url 'home' %}">Album Explorer</a>
+  {% if request.resolver_match.url_name != "home" %}
+  <div class="header-search">
+    <form class="search" role="search" method="get" action="{% url 'search' %}">
+      <input type="search" name="q" value="{{ q|default:'' }}" autocomplete="off" hx-get="{% url 'suggest' %}" hx-trigger="input changed delay:250ms" hx-target="#suggestions" aria-controls="suggestions" aria-label="{% translate 'Search for a band or an album' %}" placeholder="{% translate 'Search for a band or an album' %}">
+      <button type="submit">{% translate "Search" %}</button>
+    </form>
+    <div id="suggestions" class="suggestions" aria-live="polite"></div>
+  </div>
+  {% endif %}
+  <form class="lang-switch" action="{% url 'set_language' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    {% get_available_languages as LANGUAGES %}
+    {% for code, name in LANGUAGES %}
+      <button type="submit" name="language" value="{{ code }}"{% if code == LANGUAGE_CODE %} class="active" aria-current="true"{% endif %}>{{ code|upper }}</button>
+    {% endfor %}
+  </form>
+</header>
+<main>{% block content %}{% endblock %}</main>
+<footer class="site-footer">
+  <span class="label">{% translate "A museum of albums" %}</span>
+</footer>
+</body>
+</html>

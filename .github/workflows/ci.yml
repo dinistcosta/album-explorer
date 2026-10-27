@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Tests
+        run: pytest
+      - name: Migrations are up to date
+        run: python manage.py makemigrations --check --dry-run
+        env:
+          DEBUG: "1"
+      - name: Deployment checks
+        run: python manage.py check --deploy --fail-level WARNING
+        env:
+          DEBUG: "0"
+          SECRET_KEY: ci-dummy-key-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGH
+          ALLOWED_HOSTS: example.org
+          CSRF_TRUSTED_ORIGINS: https://example.org
+          DATABASE_URL: "sqlite:///:memory:"
+      - name: Static files collect
+        run: python manage.py collectstatic --noinput
+        env:
+          DEBUG: "0"
+          SECRET_KEY: ci-dummy-key-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGH
+          ALLOWED_HOSTS: example.org
+          CSRF_TRUSTED_ORIGINS: https://example.org
+          DATABASE_URL: "sqlite:///:memory:"

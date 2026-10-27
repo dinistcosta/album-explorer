@@ -1,0 +1,9 @@
+{% load i18n %}{% if artist.image_url %}
+<figure class="artist-photo"><img src="{{ artist.image_url }}" alt="{% blocktranslate with name=artist.name %}Photo of {{ name }}{% endblocktranslate %}">
+  <figcaption class="source">{% translate "Photo" %}: {% if artist.image_source_url %}<a href="{{ artist.image_source_url }}" rel="noopener" target="_blank">Wikimedia Commons</a>{% else %}Wikimedia Commons{% endif %}</figcaption></figure>
+{% elif header_album %}
+<figure class="artist-photo"><img src="{{ header_album.cover_url|default:'' }}{% if not header_album.cover_url %}https://coverartarchive.org/release-group/{{ header_album.mbid }}/front-500{% endif %}" alt="{% blocktranslate with title=header_album.title %}Cover of {{ title }}{% endblocktranslate %}" onerror="this.hidden=true">
+  <figcaption class="source">{% translate "Cover" %}: {{ header_album.title }}{% if header_album.year %} ({{ header_album.year }}){% endif %} · Cover Art Archive</figcaption></figure>
+{% else %}
+<div class="artist-photo placeholder" role="img" aria-label="{% translate 'Photo not available' %}"><span>{{ artist.name }}</span></div>
+{% endif %}

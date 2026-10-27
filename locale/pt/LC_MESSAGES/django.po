@@ -1,0 +1,389 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: album-explorer\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "A museum of albums"
+msgstr "Um museu de álbuns"
+
+msgid "Search for a band or an album"
+msgstr "Pesquisa uma banda ou um álbum"
+
+msgid "Search"
+msgstr "Pesquisar"
+
+msgid "Cover of %(title)s"
+msgstr "Capa de %(title)s"
+
+msgid "Cover not available"
+msgstr "Capa indisponível"
+
+msgid "Album"
+msgstr "Álbum"
+
+msgid "%(counter)s track"
+msgid_plural "%(counter)s tracks"
+msgstr[0] "%(counter)s faixa"
+msgstr[1] "%(counter)s faixas"
+
+msgid "%(m)s min"
+msgstr "%(m)s min"
+
+msgid "Tracklist"
+msgstr "Alinhamento"
+
+msgid "Side A"
+msgstr "Lado A"
+
+msgid "Side B"
+msgstr "Lado B"
+
+msgid "Side %(side)s"
+msgstr "Lado %(side)s"
+
+msgid "loading…"
+msgstr "a carregar…"
+
+msgid "The story"
+msgstr "A história"
+
+msgid "Source"
+msgstr "Fonte"
+
+msgid "read the full article"
+msgstr "ler o artigo completo"
+
+msgid "In their own words"
+msgstr "Em discurso direto"
+
+msgid "Buy"
+msgstr "Comprar"
+
+msgid "Search on Discogs"
+msgstr "Procurar no Discogs"
+
+msgid "Credits"
+msgstr "Créditos"
+
+msgid "Awards and honours"
+msgstr "Prémios e distinções"
+
+msgid "Genres"
+msgstr "Géneros"
+
+msgid "Other editions"
+msgstr "Outras edições"
+
+msgid "Source unavailable"
+msgstr "Fonte indisponível"
+
+msgid "The sources are not answering right now"
+msgstr "As fontes não estão a responder neste momento"
+
+msgid "We couldn't fetch this page from MusicBrainz. Nothing is lost."
+msgstr "Não conseguimos ir buscar esta página ao MusicBrainz. Não se perdeu nada."
+
+msgid "Try again"
+msgstr "Tenta outra vez"
+
+msgid "Not found"
+msgstr "Não encontrado"
+
+msgid "This page is not in the museum"
+msgstr "Esta página não está no museu"
+
+msgid "Back to the start"
+msgstr "Voltar ao início"
+
+msgid "Producer"
+msgstr "Produtor"
+
+msgid "Mix"
+msgstr "Mistura"
+
+msgid "Engineering"
+msgstr "Engenharia"
+
+msgid "Recording engineering"
+msgstr "Engenharia de gravação"
+
+msgid "Mastering"
+msgstr "Masterização"
+
+msgid "Audio"
+msgstr "Som"
+
+msgid "Recorded at"
+msgstr "Gravado em"
+
+msgid "Instruments"
+msgstr "Instrumentos"
+
+msgid "Vocals"
+msgstr "Voz"
+
+msgid "Arrangements"
+msgstr "Arranjos"
+
+msgid "Conducting"
+msgstr "Direção"
+
+msgid "Only available in English"
+msgstr "Disponível apenas em inglês"
+
+msgid "Only available in Portuguese"
+msgstr "Disponível apenas em português"
+
+msgid "Keep reading"
+msgstr "Continuar a ler"
+
+msgid "Release notes (Discogs)"
+msgstr "Notas da edição (Discogs)"
+
+msgid "Do you know the story of this record?"
+msgstr "Conheces a história deste disco?"
+
+msgid "Fact sheet built from MusicBrainz and Discogs data"
+msgstr "Ficha montada a partir de dados do MusicBrainz e do Discogs"
+
+msgid "Editorial contribution"
+msgstr "Contribuição editorial"
+
+msgid "%(head)s and %(last)s"
+msgstr "%(head)s e %(last)s"
+
+msgid "vinyl"
+msgstr "vinil"
+
+msgid "cassette"
+msgstr "cassete"
+
+msgid "digital"
+msgstr "digital"
+
+msgid "Recorded in %(year)s at %(studio)s, %(area)s."
+msgstr "Gravado em %(year)s em %(studio)s, %(area)s."
+
+msgid "Recorded in %(year)s at %(studio)s."
+msgstr "Gravado em %(year)s em %(studio)s."
+
+msgid "Recorded at %(studio)s, %(area)s."
+msgstr "Gravado em %(studio)s, %(area)s."
+
+msgid "Recorded at %(studio)s."
+msgstr "Gravado em %(studio)s."
+
+msgid "Produced by %(names)s."
+msgstr "Produzido por %(names)s."
+
+msgid "Released in %(year)s by %(label)s on %(formats)s."
+msgstr "Editado em %(year)s pela editora %(label)s, em %(formats)s."
+
+msgid "Released in %(year)s by %(label)s."
+msgstr "Editado em %(year)s pela editora %(label)s."
+
+msgid "Released by %(label)s on %(formats)s."
+msgstr "Editado pela editora %(label)s, em %(formats)s."
+
+msgid "Released by %(label)s."
+msgstr "Editado pela editora %(label)s."
+
+msgid "%(name)s is a band formed in %(year)s (%(country)s)."
+msgstr "%(name)s é uma banda formada em %(year)s (%(country)s)."
+
+msgid "%(name)s is a band formed in %(year)s."
+msgstr "%(name)s é uma banda formada em %(year)s."
+
+msgid "%(name)s is a band (%(country)s)."
+msgstr "%(name)s é uma banda (%(country)s)."
+
+msgid "%(name)s is a band."
+msgstr "%(name)s é uma banda."
+
+msgid "Artist active since %(year)s (%(country)s)."
+msgstr "Artista em atividade desde %(year)s (%(country)s)."
+
+msgid "Artist active since %(year)s."
+msgstr "Artista em atividade desde %(year)s."
+
+msgid "Artist (%(country)s)."
+msgstr "Artista (%(country)s)."
+
+msgid "Artist."
+msgstr "Artista."
+
+msgid "Photo of %(name)s"
+msgstr "Fotografia de %(name)s"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Photo not available"
+msgstr "Fotografia indisponível"
+
+msgid "Cover"
+msgstr "Capa"
+
+msgid "Band"
+msgstr "Banda"
+
+msgid "Artist"
+msgstr "Artista"
+
+msgid "Do you know this band's story?"
+msgstr "Conheces a história desta banda?"
+
+msgid "Fact sheet built from MusicBrainz data"
+msgstr "Ficha técnica construída a partir de dados do MusicBrainz"
+
+msgid "Members"
+msgstr "Membros"
+
+msgid "Around the web"
+msgstr "Na web"
+
+msgid "Official website"
+msgstr "Site oficial"
+
+msgid "Influences"
+msgstr "Influências"
+
+msgid "Discography"
+msgstr "Discografia"
+
+msgid "Studio albums"
+msgstr "Álbuns de estúdio"
+
+msgid "EPs"
+msgstr "EPs"
+
+msgid "Live"
+msgstr "Ao vivo"
+
+msgid "Compilations"
+msgstr "Compilações"
+
+msgid "Other"
+msgstr "Outros"
+
+msgid "vocals"
+msgstr "voz"
+
+msgid "lead vocals"
+msgstr "voz principal"
+
+msgid "backing vocals"
+msgstr "coros"
+
+msgid "background vocals"
+msgstr "coros"
+
+msgid "guitar"
+msgstr "guitarra"
+
+msgid "electric guitar"
+msgstr "guitarra elétrica"
+
+msgid "acoustic guitar"
+msgstr "guitarra acústica"
+
+msgid "bass guitar"
+msgstr "baixo"
+
+msgid "bass"
+msgstr "baixo"
+
+msgid "drums"
+msgstr "bateria"
+
+msgid "drums (drum set)"
+msgstr "bateria"
+
+msgid "percussion"
+msgstr "percussão"
+
+msgid "keyboard"
+msgstr "teclados"
+
+msgid "piano"
+msgstr "piano"
+
+msgid "synthesizer"
+msgstr "sintetizador"
+
+msgid "organ"
+msgstr "órgão"
+
+msgid "saxophone"
+msgstr "saxofone"
+
+msgid "trumpet"
+msgstr "trompete"
+
+msgid "violin"
+msgstr "violino"
+
+msgid "cello"
+msgstr "violoncelo"
+
+msgid "harmonica"
+msgstr "harmónica"
+
+msgid "Suggestions"
+msgstr "Sugestões"
+
+msgid "Bands"
+msgstr "Bandas"
+
+msgid "Albums"
+msgstr "Álbuns"
+
+msgid "Nothing found for this search."
+msgstr "Nada encontrado para esta pesquisa."
+
+msgid "MusicBrainz didn't respond; showing what we already know."
+msgstr "A pesquisa no MusicBrainz não respondeu; mostramos o que já conhecemos."
+
+msgid "Rooms by genre"
+msgstr "Salas por género"
+
+msgid "Genre room"
+msgstr "Sala de género"
+
+msgid "This room is still being assembled."
+msgstr "Esta sala ainda está a ser montada."
+
+msgid "This room has no albums yet."
+msgstr "Esta sala ainda não tem álbuns."
+
+msgid "Undated"
+msgstr "Sem data"
+
+#, python-format
+msgid "%(decade)ss"
+msgstr "Anos %(decade)s"
+
+msgid "Unlock all fields"
+msgstr "Desbloquear todos os campos"
+
+msgid "Unlocked %(n)d item(s)."
+msgstr "%(n)d item(ns) desbloqueado(s)."
+
+msgid "Refresh now"
+msgstr "Atualizar agora"
+
+msgid "Refresh started for “%(title)s”."
+msgstr "Atualização iniciada para “%(title)s”."
+
+msgid "Refresh started for %(n)d artist(s)."
+msgstr "Atualização iniciada para %(n)d artista(s)."
+
+msgid "Could not refresh “%(title)s”: source unavailable."
+msgstr "Não foi possível atualizar “%(title)s”: fonte indisponível."
+
+msgid "Could not refresh “%(title)s”: MusicBrainz no longer has this album."
+msgstr "Não foi possível atualizar “%(title)s”: o MusicBrainz já não tem este álbum."

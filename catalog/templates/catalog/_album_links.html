@@ -1,0 +1,4 @@
+{% load i18n %}{% if listen_links %}
+<div class="chips" style="margin-top:20px">{% for l in listen_links %}<a class="chip" href="{{ l.url }}" target="_blank" rel="noopener">▶ {{ l.name }}</a>{% endfor %}</div>
+{% endif %}
+<div class="chips buy" style="margin-top:12px"><span class="label">{% translate "Buy" %}</span>{% for l in buy_links %}<a class="chip" href="{{ l.url }}" target="_blank" rel="noopener">{{ l.name }}</a>{% endfor %}<a class="chip" href="{{ discogs_url }}" target="_blank" rel="noopener">{% translate "Search on Discogs" %}</a></div>

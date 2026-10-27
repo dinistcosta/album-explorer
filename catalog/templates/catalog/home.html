@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}Album Explorer{% endblock %}
+{% block content %}
+<section class="home-hero">
+  <p class="label">{% translate "A museum of albums" %}</p>
+  <h1>{% translate "Search for a band or an album" %}</h1>
+  <form class="search" role="search" method="get" action="{% url 'search' %}">
+    <input type="search" name="q" autocomplete="off" hx-get="{% url 'suggest' %}" hx-trigger="input changed delay:250ms" hx-target="#suggestions" aria-controls="suggestions" aria-label="{% translate 'Search for a band or an album' %}" placeholder="{% translate 'Search for a band or an album' %}">
+    <button type="submit">{% translate "Search" %}</button>
+  </form>
+  <div id="suggestions" class="suggestions" aria-live="polite"></div>
+</section>
+{% if featured_genres %}
+<section class="home-rooms">
+  <h2 class="section-title">{% translate "Rooms by genre" %}</h2>
+  <ul class="chips">{% for g in featured_genres %}<li><a class="chip" href="{% url 'genre_detail' g.slug %}">{{ g.name }}</a></li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

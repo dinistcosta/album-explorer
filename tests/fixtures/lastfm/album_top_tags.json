@@ -1,0 +1,22 @@
+{
+  "toptags": {
+    "tag": [
+      {
+        "count": 100,
+        "name": "grunge"
+      },
+      {
+        "count": 80,
+        "name": "rock"
+      },
+      {
+        "count": 60,
+        "name": "albums I own"
+      }
+    ],
+    "@attr": {
+      "artist": "Nirvana",
+      "album": "Nevermind"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n static catalog_extras %}
+{% block title %}{{ album.title }} · {{ album.artist_credit }} · Album Explorer{% endblock %}
+{% block accent %}{{ album.accent_color }}{% endblock %}
+{% block content %}
+<div class="page-album">
+  <section class="a-hero">
+    <div class="sleeve-wrap">
+      <div class="disc" aria-hidden="true"></div>
+      {% if album.cover_url %}
+      <div class="sleeve"><img src="{{ album.cover_url }}" alt="{% blocktranslate with title=album.title %}Cover of {{ title }}{% endblocktranslate %}"></div>
+      {% else %}
+      <div class="sleeve placeholder" role="img" aria-label="{% translate 'Cover not available' %}"><span>{{ album.title }}</span></div>
+      {% endif %}
+    </div>
+    <div>
+      <p class="label">{% translate "Album" %}{% if album.year %} · {{ album.year }}{% endif %}</p>
+      <h1 class="album">{{ album.title }}</h1>
+      <div class="artist">{% if album.artist %}<a href="{{ album.artist.get_absolute_url }}">{{ album.artist.name }}</a>{% else %}{{ album.artist_credit }}{% endif %}</div>
+      <div class="meta">
+        {% if album.reference_release.label %}{{ album.reference_release.label }}{% endif %}
+        {% with n=album.reference_release.track_count %}{% if n %}{% if album.reference_release.label %} · {% endif %}{% blocktranslate count counter=n %}{{ counter }} track{% plural %}{{ counter }} tracks{% endblocktranslate %}{% endif %}{% endwith %}
+        {% if total_minutes %} · {% blocktranslate with m=total_minutes %}{{ m }} min{% endblocktranslate %}{% endif %}
+      </div>
+      <div id="album-links">{% include "catalog/_album_links.html" %}</div>
+      {% if album.cover_url %}<div class="source cover-source">{% translate "Cover" %}: <a href="https://coverartarchive.org/release-group/{{ album.mbid }}" rel="noopener">Cover Art Archive</a></div>{% endif %}
+    </div>
+  </section>
+
+  <div class="a-body">
+    {% if tracks_by_side %}
+    <div class="a-tracks">
+      <div class="sides{% if tracks_by_side.0.0 is None %} single{% endif %}">
+        {% for side, tracks in tracks_by_side %}
+        <div class="side">
+          <h2>{% if side is None %}{% translate "Tracklist" %}{% elif side == "A" %}{% translate "Side A" %}{% elif side == "B" %}{% translate "Side B" %}{% else %}{% blocktranslate %}Side {{ side }}{% endblocktranslate %}{% endif %}</h2>
+          <ol>
+            {% for t in tracks %}
+            <li><span>{{ t.number|default:t.position }}. {{ t.title }}</span><span>{{ t.length_ms|duration }}</span></li>
+            {% endfor %}
+          </ol>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="source">{% translate "Source" %}: MusicBrainz</div>
+    </div>
+    {% endif %}
+    {% include "catalog/_album_sections.html" %}
+  </div>
+</div>
+<script src="{% static 'js/vinyl.js' %}" defer></script>
+{% endblock %}

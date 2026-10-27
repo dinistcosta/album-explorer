@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if q %}{{ q }} · {% endif %}Album Explorer{% endblock %}
+{% block content %}
+<section class="search-results">
+  {% if results.source_error %}<p class="notice" role="status">{% translate "MusicBrainz didn't respond; showing what we already know." %}</p>{% endif %}
+  {% if searched and not results.artists and not results.albums %}
+    <p>{% translate "Nothing found for this search." %}</p>
+  {% endif %}
+  {% if results.artists %}
+  <h2 class="label">{% translate "Bands" %}</h2>
+  <ul class="band-list">
+    {% for a in results.artists %}
+    <li><a href="{{ a.get_absolute_url }}">{{ a.name }}</a>
+      <span class="label">{{ a.country }}{% if a.country and a.begin_year %} · {% endif %}{% if a.begin_year %}{{ a.begin_year }}{% if a.end_year %}–{{ a.end_year }}{% endif %}{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if results.albums %}
+  <h2 class="label">{% translate "Albums" %}</h2>
+  {% include "catalog/_cover_grid.html" with albums=results.albums %}
+  {% endif %}
+</section>
+{% endblock %}
