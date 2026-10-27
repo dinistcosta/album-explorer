@@ -158,3 +158,66 @@ def test_locked_image_url_respected(db, artist_factory, wikidata_fixtures, monke
     import_artist_wikidata(artist)
     artist.refresh_from_db()
     assert artist.image_url == "https://example.com/mine.jpg"
+
+
+def _answer_with(wikidata_fixtures, entities_for_claims):
+    from sources.models import HttpCacheEntry
+
+    HttpCacheEntry.objects.all().delete()  # a later refresh, past the cache
+    original = wikidata_fixtures.api.side_effect
+
+    def answer(request):
+        if "claims" in request.url.params["props"]:
+            return httpx.Response(200, json={"entities": entities_for_claims, "success": 1})
+        return original(request)
+
+    wikidata_fixtures.api.side_effect = answer
+
+
+def test_redirected_album_item_uses_the_single_returned_entity(db, imported_album, wikidata_fixtures):
+    target = copy.deepcopy(load("nevermind.json")["entities"]["Q17444"])
+    target["id"] = "Q99999"
+    _answer_with(wikidata_fixtures, {"Q99999": target})  # asked for Q17444, got the redirect target
+    import_album_wikidata(imported_album)
+    assert imported_album.awards.get().wikidata_id == "Q120443091"
+
+
+def test_missing_album_item_writes_nothing(db, imported_album, wikidata_fixtures):
+    import_album_wikidata(imported_album)
+    before = list(imported_album.awards.values_list("pk", flat=True))
+    assert before
+    _answer_with(wikidata_fixtures, {"Q17444": {"id": "Q17444", "missing": ""}})
+    import_album_wikidata(imported_album)
+    assert list(imported_album.awards.values_list("pk", flat=True)) == before
+
+
+def test_missing_artist_item_keeps_awards_and_influences(db, artist_factory, wikidata_fixtures, monkeypatch):
+    artist = artist_factory(mbid=NIRVANA, name="Nirvana", wikidata_id="Q11649", locked_fields=["wikidata_id"])
+    import_artist_wikidata(artist)
+    counts = (artist.awards.count(), artist.influences.count())
+    assert counts != (0, 0)
+    _answer_with(wikidata_fixtures, {"Q11649": {"id": "Q11649", "missing": ""}})
+    import_artist_wikidata(artist)
+    assert (artist.awards.count(), artist.influences.count()) == counts
+
+
+def test_redirected_artist_item_uses_the_single_returned_entity(db, artist_factory, wikidata_fixtures):
+    artist = artist_factory(mbid=NIRVANA, name="Nirvana", wikidata_id="Q1", locked_fields=["wikidata_id"])
+    _answer_with(wikidata_fixtures, {"Q11649": load("nirvana.json")["entities"]["Q11649"]})
+    import_artist_wikidata(artist)
+    assert artist.influences.exists()
+
+
+def test_get_entity_rules(wikidata_fixtures, settings):
+    from sources.models import HttpCacheEntry
+
+    wikidata_fixtures.api.mock(side_effect=lambda r: httpx.Response(200, json={"entities": {
+        "Q2": {"id": "Q2", "labels": {}}}}))
+    assert wikidata.get_entity("Q1", props="labels") == {"id": "Q2", "labels": {}}
+    HttpCacheEntry.objects.all().delete()
+    wikidata_fixtures.api.mock(side_effect=lambda r: httpx.Response(200, json={"entities": {
+        "Q1": {"id": "Q1", "missing": ""}}}))
+    assert wikidata.get_entity("Q1", props="labels") is None
+    HttpCacheEntry.objects.all().delete()
+    wikidata_fixtures.api.mock(side_effect=lambda r: httpx.Response(200, json={"entities": {}}))
+    assert wikidata.get_entity("Q1", props="labels") is None

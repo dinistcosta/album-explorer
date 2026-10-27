@@ -196,3 +196,26 @@ def test_band_albums_use_members_wikiquote_pages(db, no_sleep, album_factory, ar
     quotes = list(album.quotes.all())
     assert quotes and len(quotes) <= 2
     assert all(q.speaker == "Kurt Cobain" and q.origin == "wikiquote" for q in quotes)
+
+
+def test_missing_wikidata_item_keeps_existing_quotes(quote_world):
+    album = quote_world.album
+    import_quotes(album)
+    before = list(album.quotes.values_list("pk", flat=True))
+    assert before
+    from sources.models import HttpCacheEntry
+
+    HttpCacheEntry.objects.all().delete()  # a later refresh, past the cache
+    quote_world.routes[0].mock(side_effect=lambda r: httpx.Response(200, json={"entities": {
+        i: {"id": i, "missing": ""} for i in r.url.params["ids"].split("|")}}))
+    import_quotes(album)
+    assert list(album.quotes.values_list("pk", flat=True)) == before
+
+
+def test_redirected_wikidata_item_still_finds_quotes(quote_world):
+    album = quote_world.album
+    quote_world.routes[0].mock(side_effect=lambda r: httpx.Response(200, json={"entities": {
+        "Q100": {"id": "Q100", "sitelinks": {"enwikiquote": {"title": "Kurt Cobain"}}},
+    } if r.url.params["ids"] == "Q1" else {"Q200": {"id": "Q200", "sitelinks": {"enwiki": {"title": "In Utero"}}}}}))
+    import_quotes(album)
+    assert album.quotes.filter(origin="wikiquote").exists()

@@ -26,6 +26,18 @@ def get_entities(
     return entities
 
 
+def get_entity(qid: str, props: str = "claims|sitelinks|labels", foreground: bool = False) -> dict | None:
+    """One item, or None when Wikidata says it is missing. A redirected item comes back keyed by its
+    target id, so a response holding a single other entity is that target."""
+    entities = get_entities([qid], props=props, foreground=foreground)
+    entity = entities.get(qid)
+    if entity is None and len(entities) == 1:
+        entity = next(iter(entities.values()))
+    if not entity or "missing" in entity:
+        return None
+    return entity
+
+
 def wikidata_id_from_rels(relations: list[dict]) -> str | None:
     for rel in relations or []:
         if rel.get("type") != "wikidata":

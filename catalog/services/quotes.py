@@ -150,7 +150,9 @@ def import_quotes(album: Album) -> None:
     rows: list[dict] = []
     if album.artist and album.artist.wikidata_id:
         qid = album.artist.wikidata_id
-        entity = wikidata.get_entities([qid], props="sitelinks|claims|labels").get(qid) or {}
+        entity = wikidata.get_entity(qid, props="sitelinks|claims|labels")
+        if entity is None:  # deleted on Wikidata: keep the quotes we have
+            return
         pages = [(album.artist.name, wikidata.wiki_titles(entity))]  # the band/artist's own page first
         member_ids = _item_ids(entity, "P527")[:MAX_MEMBERS]
         if member_ids:  # one call for all members
@@ -175,7 +177,9 @@ def import_quotes(album: Album) -> None:
                 break
 
     if album.wikidata_id:
-        entity = wikidata.get_entities([album.wikidata_id], props="sitelinks").get(album.wikidata_id) or {}
+        entity = wikidata.get_entity(album.wikidata_id, props="sitelinks")
+        if entity is None:  # deleted on Wikidata: keep the quotes we have
+            return
         titles = wikidata.wiki_titles(entity)
         for lang in ("en", "pt"):
             title = titles.get(f"{lang}wiki")

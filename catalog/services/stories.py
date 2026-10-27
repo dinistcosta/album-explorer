@@ -66,7 +66,9 @@ def parse_wikipedia_html(html: str, lang: str) -> list[dict]:
 def import_wikipedia_stories(entity: Album | Artist) -> None:
     if not entity.wikidata_id:
         return
-    wikidata_entity = wikidata.get_entities([entity.wikidata_id], props="sitelinks").get(entity.wikidata_id) or {}
+    wikidata_entity = wikidata.get_entity(entity.wikidata_id, props="sitelinks")
+    if wikidata_entity is None:  # deleted on Wikidata: keep the stories we have
+        return
     titles = wikidata.wiki_titles(wikidata_entity)
     owner = "album" if isinstance(entity, Album) else "artist"
 

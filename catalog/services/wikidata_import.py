@@ -68,7 +68,9 @@ def import_album_wikidata(album: Album) -> None:
         qid = wikidata.wikidata_id_from_rels(group.get("relations") or []) or album.wikidata_id
     if not qid:
         return
-    entity = wikidata.get_entities([qid]).get(qid) or {}
+    entity = wikidata.get_entity(qid)
+    if entity is None:  # deleted on Wikidata: keep what we have
+        return
     awards = _awards(entity)
     labels = wikidata.get_entities([q for q, _ in awards], props="labels") if awards else {}
     with transaction.atomic():
@@ -85,7 +87,9 @@ def import_artist_wikidata(artist: Artist) -> None:
         qid = wikidata.wikidata_id_from_rels(data.get("relations") or []) or artist.wikidata_id
     if not qid:
         return
-    entity = wikidata.get_entities([qid]).get(qid) or {}
+    entity = wikidata.get_entity(qid)
+    if entity is None:  # deleted on Wikidata: keep what we have
+        return
     awards = _awards(entity)
     influence_ids = list(dict.fromkeys(_item_ids(entity, "P737")))
     label_ids = [q for q, _ in awards] + influence_ids
