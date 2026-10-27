@@ -11,10 +11,12 @@ from django.db import transaction
 
 from catalog.models import Album, Quote
 from catalog.services.text import normalize
+from catalog.services.wikidata_import import _item_ids, _label
 from catalog.tasks import register_album_enricher
 from sources import wikidata, wikipedia, wikiquote
 
 MAX_QUOTES = 2
+MAX_MEMBERS = 4
 MAX_WIKIQUOTE_CHARS = 500
 MIN_QUOTE_WORDS = 6
 # h2 sections of a Wikiquote page that are not the subject's own statements.
@@ -146,19 +148,30 @@ def import_quotes(album: Album) -> None:
 
     rows: list[dict] = []
     if album.artist and album.artist.wikidata_id:
-        entity = wikidata.get_entities([album.artist.wikidata_id], props="sitelinks").get(album.artist.wikidata_id) or {}
-        titles = wikidata.wiki_titles(entity)
-        for lang in ("en", "pt"):  # reader-independent: English first
-            title = titles.get(f"{lang}wikiquote")
-            if not title:
-                continue
-            html = wikiquote.get_wikiquote_html(lang, title)
-            for q in extract_wikiquote_quotes(html, album.title, track_titles, album.artist.name):
-                rows.append({
-                    "text": q.text, "speaker": q.speaker, "source_label": q.source_label or "Wikiquote",
-                    "source_url": q.source_url or wikiquote.page_url(lang, title), "origin": "wikiquote",
-                    "lang": lang})
-            break
+        qid = album.artist.wikidata_id
+        entity = wikidata.get_entities([qid], props="sitelinks|claims|labels").get(qid) or {}
+        pages = [(album.artist.name, wikidata.wiki_titles(entity))]  # the band/artist's own page first
+        member_ids = _item_ids(entity, "P527")[:MAX_MEMBERS]
+        if member_ids:  # one call for all members
+            members = wikidata.get_entities(member_ids, props="sitelinks|labels")
+            for mid in member_ids:
+                member = members.get(mid) or {}
+                name = _label(member, "en") or _label(member, "pt")
+                if name:
+                    pages.append((name, wikidata.wiki_titles(member)))
+        for speaker, titles in pages:
+            for lang in ("en", "pt"):  # reader-independent: English first
+                title = titles.get(f"{lang}wikiquote")
+                if not title:
+                    continue
+                html = wikiquote.get_wikiquote_html(lang, title)
+                for q in extract_wikiquote_quotes(html, album.title, track_titles, speaker):
+                    rows.append({
+                        "text": q.text, "speaker": q.speaker[:300],
+                        "source_label": (q.source_label or "Wikiquote")[:300],
+                        "source_url": (q.source_url or wikiquote.page_url(lang, title))[:500],
+                        "origin": "wikiquote", "lang": lang})
+                break
 
     if album.wikidata_id:
         entity = wikidata.get_entities([album.wikidata_id], props="sitelinks").get(album.wikidata_id) or {}
@@ -170,7 +183,7 @@ def import_quotes(album: Album) -> None:
             for q in extract_wikipedia_quotes(wikipedia.get_article_html(lang, title), people):
                 rows.append({
                     "text": q.text, "speaker": q.speaker, "source_label": q.source_label,
-                    "source_url": q.source_url or wikipedia.article_url(lang, title), "origin": "wikipedia",
+                    "source_url": (q.source_url or wikipedia.article_url(lang, title))[:500], "origin": "wikipedia",
                     "lang": lang})
 
     order = {"wikiquote": 0, "wikipedia": 1}

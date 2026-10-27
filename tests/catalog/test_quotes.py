@@ -165,3 +165,34 @@ def test_import_quotes_no_fetch_inside_atomic(quote_world, monkeypatch):
     monkeypatch.setattr(httpx.Client, "send", spy)
     import_quotes(quote_world.album)
     assert seen and not any(seen)
+
+
+def test_band_albums_use_members_wikiquote_pages(db, no_sleep, album_factory, artist_factory):
+    band = artist_factory(name="Nirvana", wikidata_id="Q11649")
+    album = album_factory(title="Nevermind", artist=band)
+    release = Release.objects.create(album=album, mbid="44444444-4444-4444-4444-444444444444", title="Nevermind")
+    Track.objects.create(release=release, position=1, number="1", title="Lithium")
+    album.reference_release = release
+    album.save()
+    claims = {"P527": [{"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q8446"}}}},
+                       {"mainsnak": {"snaktype": "somevalue"}}]}
+
+    def wikidata(request):
+        ids = request.url.params["ids"].split("|")
+        data = {"Q11649": {"id": "Q11649", "claims": claims, "labels": {},
+                           "sitelinks": {"enwikiquote": {"title": "Nirvana (band)"}}},
+                "Q8446": {"id": "Q8446", "labels": {"en": {"value": "Kurt Cobain"}},
+                          "sitelinks": {"enwikiquote": {"title": "Kurt Cobain"}}}}
+        return httpx.Response(200, json={"entities": {i: data[i] for i in ids}})
+
+    def wikiquote(request):
+        name = "nirvana_en.json" if request.url.params["page"] == "Nirvana (band)" else "cobain_en.json"
+        return httpx.Response(200, json=json.loads((FIX / name).read_text()))
+
+    with respx.mock(assert_all_called=False) as router:
+        router.get(WIKIDATA).mock(side_effect=wikidata)
+        router.get("https://en.wikiquote.org/w/api.php").mock(side_effect=wikiquote)
+        import_quotes(album)
+    quotes = list(album.quotes.all())
+    assert quotes and len(quotes) <= 2
+    assert all(q.speaker == "Kurt Cobain" and q.origin == "wikiquote" for q in quotes)

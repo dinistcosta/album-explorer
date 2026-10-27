@@ -194,7 +194,7 @@ def test_genre_chips_and_quote_blocks(client, linked_album):
     Quote.objects.create(album=linked_album, text="Wanted it huge", speaker="Butch Vig", source_label="Mojo", source_url="https://e.org/m", origin="wikipedia", lang="en")
     html = _page(client, linked_album)
     assert '<span class="chip">grunge</span>' in html
-    assert "Nas palavras da banda" in html and "We made it fast" in html and "Kurt Cobain" in html
+    assert "Em discurso direto" in html and "We made it fast" in html and "Kurt Cobain" in html
     assert 'href="https://e.org/s"' in html and "Wikiquote" in html
     assert "Wanted it huge" in html and "pull-quote" in html
-    assert "In the band&#x27;s words" in _page(client, linked_album, "en") or "In the band's words" in _page(client, linked_album, "en")
+    assert "In the band&#x27;s words" in _page(client, linked_album, "en") or "In their own words" in _page(client, linked_album, "en")
