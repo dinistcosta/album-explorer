@@ -1,6 +1,6 @@
 # Album Explorer
 
-A bilingual (Portuguese / English) **museum of albums**. You arrive with the records you already love, look one up, and get to know it properly: how it was made, by whom, and what story it carries. Every album page is laid out like a museum placard: a vinyl sleeve, the tracklist by side, liner notes, quotes, credits, awards, and where to listen or buy, with the source of each piece shown right next to it.
+A bilingual (Portuguese / English) **museum of albums**. You arrive with the records you already love, look one up, and get to know it properly: how it was made, by whom, and what story it carries. Every album page is laid out like a museum placard: a vinyl sleeve, the tracklist (by side when a vinyl pressing lines up), liner notes, quotes, credits, awards, and where to listen or buy, with the source of each piece shown right next to it.
 
 > **Live demo:** coming soon.
 
@@ -21,8 +21,8 @@ Genre rooms (albums of a genre by decade) need a Last.fm API key to be populated
 ## What it does
 
 - **Search** with instant local suggestions and full MusicBrainz results.
-- **Album page**: vinyl sleeve with sides, liner notes, notable quotes, credits (producer, engineers, musicians, studio), awards, other editions, and links to listen or buy.
-- **Band page**: members and instruments by period, discography, story, quotes and awards.
+- **Album page**: vinyl sleeve, tracklist by side when a vinyl edition matches, liner notes, notable quotes, credits (producer, engineers, musicians, studio), awards, other editions, and links to listen or buy.
+- **Band page**: members and instruments by period, discography, story, quotes, awards and links.
 - **Genre rooms**: a genre browsed decade by decade, ordered by popularity.
 - **Any album works**: pages for albums nobody curated are built on demand. The core data appears first; the richer sections fill in as background jobs finish.
 
@@ -38,10 +38,10 @@ Genre rooms (albums of a genre by decade) need a Last.fm API key to be populated
 ```
 
 - **Sources layer** (`sources/`): one small module per external service, the only code that talks to the network. Responses go through an HTTP cache and a shared **rate limiter** that honours each service's rules (MusicBrainz: one request per second, with a proper User-Agent), and gives foreground requests priority over background ones. Failures raise typed errors (`SourceUnavailable`, `SourceNotFound`) so a missing source degrades a page instead of breaking it.
-- **Background enrichment**: opening an album imports the core record (MusicBrainz and Cover Art Archive) synchronously, then enqueues a task that adds stories, quotes, awards, editions and links. The page loads the enriched sections with htmx when ready. The queue is database-backed (Django 6 `django.tasks` + `django-tasks-db`), so there is no Redis to run. Data goes stale after a while and is refreshed the next time someone visits.
+- **Background enrichment**: the first visit to an album imports its MusicBrainz core synchronously (the release group, its editions, the reference edition's tracklist and credits), with a short time budget per request so a slow source gives a "try again" page rather than a hung one. It then enqueues a task that adds the cover and accent colour (Cover Art Archive), vinyl sides, stories, quotes, awards, genres and links. The page loads the enriched sections with htmx when ready. The queue is database-backed (Django 6 `django.tasks` + `django-tasks-db`), so there is no Redis to run. Data goes stale after 30 days; the next visit re-queues the task, which re-imports the MusicBrainz core of the album or band before refreshing everything else. An id that MusicBrainz has merged redirects to the surviving one.
 - **Story fallback chain**: the liner notes come from the Wikipedia article in the reader's language, then the Last.fm wiki, and finally a fact sheet generated from the stored data ("Recorded in 1991 at Sound City, produced by Butch Vig…"). The page always has something true to say and always names where it came from.
-- **Locked fields**: corrections made in the Django admin lock the edited fields, so later refreshes from the sources never overwrite human fixes. Rows created by hand are marked as manual and left alone.
-- **Phase 2 ready**: credits, places and artist influences are already stored, so "similar albums, and why" will read data that exists rather than require a remodel.
+- **Locked fields and manual rows**: corrections made in the Django admin lock the edited fields, so later refreshes from the sources never overwrite human fixes. Credits, quotes, awards, links and stories added or edited by hand are marked as manual and are never deleted or replaced by a refresh; deleting an imported row in the admin hides it, so the next refresh does not bring it back.
+- **Phase 2 ready**: credits, places and artist influences are already stored (influences are not shown yet), so "similar albums, and why" will read data that exists rather than require a remodel.
 
 Stack: Python 3.14, Django 6, htmx, PostgreSQL in production (SQLite locally), WhiteNoise, gunicorn.
 
@@ -52,11 +52,11 @@ Stack: Python 3.14, Django 6, htmx, PostgreSQL in production (SQLite locally), W
 | Artists, albums, editions, tracks, credits, members | [MusicBrainz](https://musicbrainz.org) | CC0 (core data) |
 | Covers | [Cover Art Archive](https://coverartarchive.org) | Per image, as shown by the archive |
 | Album and band stories, quotes | [Wikipedia](https://wikipedia.org), [Wikiquote](https://wikiquote.org) | CC BY-SA |
-| Awards, photos, influences, cross-source links | [Wikidata](https://wikidata.org) (and Wikimedia Commons for photos) | CC0 (Commons images: per image) |
+| Awards, photos, influences (stored for phase 2), cross-source links | [Wikidata](https://wikidata.org) (and Wikimedia Commons for photos) | CC0 (Commons images: per image) |
 | Story fallback, popularity | [Last.fm](https://www.last.fm) | Wiki text CC BY-SA; API terms apply |
-| Release notes, labels, styles, marketplace search | [Discogs](https://www.discogs.com) | API terms apply |
+| Release notes, styles; a marketplace search link | [Discogs](https://www.discogs.com) | API terms apply |
 
-**The "always show the source" rule:** every story, quote, award and image is stored with its source URL and licence, and the page displays them next to the content. Nothing is shown without attribution, and generated text is labelled as generated.
+**The "always show the source" rule:** every block on a page (tracklist, credits, story, quotes, awards, cover, photo) names its source next to the content, with a link and licence where the source has one. Nothing is shown without attribution, and generated text is labelled as generated.
 
 ## Running it locally
 
@@ -104,7 +104,7 @@ Set `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` (pl
 pytest
 ```
 
-The suite (270+ tests) runs offline: external services are replaced by recorded fixtures (`respx`), the task queue is swapped for an immediate backend, and the clock is faked where rate limiting matters. CI (`.github/workflows/ci.yml`) also checks that no migration is missing and that `check --deploy --fail-level WARNING` passes with production settings.
+The suite (270+ tests) runs offline: external services are replaced by recorded fixtures (`respx`), the task queue is swapped for an immediate backend, and the clock is faked where rate limiting matters. CI (`.github/workflows/ci.yml`) also checks that no migration is missing, that `check --deploy --fail-level WARNING` passes and that `collectstatic` runs with production settings.
 
 ## Roadmap
 
