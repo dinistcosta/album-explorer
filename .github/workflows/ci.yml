@@ -30,7 +30,7 @@ jobs:
           SECRET_KEY: ci-dummy-key-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGH
           ALLOWED_HOSTS: example.org
           CSRF_TRUSTED_ORIGINS: https://example.org
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
       - name: Static files collect
         run: python manage.py collectstatic --noinput
         env:
@@ -38,4 +38,4 @@ jobs:
           SECRET_KEY: ci-dummy-key-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGH
           ALLOWED_HOSTS: example.org
           CSRF_TRUSTED_ORIGINS: https://example.org
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
