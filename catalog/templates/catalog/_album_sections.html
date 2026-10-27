@@ -45,7 +45,7 @@
   <div class="box awards">
     <h3>{% translate "Awards and honours" %}</h3>
     <ul>{% for a in awards %}<li>{% if LANGUAGE_CODE == "pt" %}{{ a.name_pt|default:a.name_en }}{% else %}{{ a.name_en|default:a.name_pt }}{% endif %}{% if a.year %} ({{ a.year }}){% endif %}</li>{% endfor %}</ul>
-    <div class="source">{% translate "Source" %}: Wikidata</div>
+    <div class="source">{% translate "Source" %}: {% if album.wikidata_id %}<a href="https://www.wikidata.org/wiki/{{ album.wikidata_id }}" rel="noopener">Wikidata</a>{% else %}Wikidata{% endif %}</div>
   </div>
   {% endif %}
 

@@ -132,3 +132,16 @@ def test_credit_roles_translated(client, imported_album):
     pt = client.get(f"/pt/album/{imported_album.mbid}/sections/").content.decode()
     en = client.get(f"/en/album/{imported_album.mbid}/sections/").content.decode()
     assert "Produtor" in pt and "Producer" in en
+
+
+def test_awards_rendered_in_active_language_with_wikidata_source(client, album_factory):
+    from catalog.models import Award
+
+    album = album_factory(wikidata_id="Q17444", enriched_at=timezone.now())
+    Award.objects.create(album=album, name_en="Diamond album", name_pt="Álbum de diamante", year=1993)
+    pt = client.get(f"/pt/album/{album.mbid}/sections/").content.decode()
+    en = client.get(f"/en/album/{album.mbid}/sections/").content.decode()
+    assert "Álbum de diamante (1993)" in pt and "Diamond album" not in pt
+    assert "Diamond album (1993)" in en and "Álbum de diamante" not in en
+    assert 'href="https://www.wikidata.org/wiki/Q17444"' in pt
+    assert "Fonte" in pt and "Source" in en

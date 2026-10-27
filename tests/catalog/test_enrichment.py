@@ -7,6 +7,7 @@ from catalog import tasks
 from catalog.services import refresh
 from catalog.services.album_import import apply_vinyl_sides
 from catalog.services.color import apply_cover_and_accent
+from catalog.services.wikidata_import import import_album_wikidata, import_artist_wikidata
 
 
 def boom(obj):
@@ -15,7 +16,8 @@ def boom(obj):
 
 def test_enrichers_registered_in_order():
     assert tasks.ALBUM_ENRICHERS[:2] == [apply_vinyl_sides, apply_cover_and_accent]
-    assert tasks.ARTIST_ENRICHERS == []
+    assert tasks.ARTIST_ENRICHERS == [import_artist_wikidata]
+    assert import_album_wikidata in tasks.ALBUM_ENRICHERS
 
 
 def test_failing_enricher_does_not_stop_others(db, imported_album, monkeypatch):

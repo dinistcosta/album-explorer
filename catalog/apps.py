@@ -7,3 +7,4 @@ class CatalogConfig(AppConfig):
     def ready(self):
         # Importing registers the enrichers; later tasks add their modules here.
         from . import tasks  # noqa: F401
+        from .services import wikidata_import  # noqa: F401
