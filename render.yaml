@@ -1,0 +1,28 @@
+# Render Blueprint for the free demo: one free web service that also runs the
+# task worker (see bin/start-free.sh). The database lives on Neon's free plan,
+# so DATABASE_URL is entered by hand when the Blueprint is created.
+services:
+  - type: web
+    name: album-explorer
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: sh bin/start-free.sh
+    healthCheckPath: /pt/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.14.7"
+      - key: DEBUG
+        value: "0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CONTACT_URL
+        value: https://github.com/dinistcosta/album-explorer
+      - key: DATABASE_URL
+        sync: false
+      - key: LASTFM_API_KEY
+        sync: false
+      - key: DISCOGS_TOKEN
+        sync: false
