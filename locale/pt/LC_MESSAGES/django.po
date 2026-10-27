@@ -186,23 +186,26 @@ msgstr "Editado pela editora %(label)s, em %(formats)s."
 msgid "Released by %(label)s."
 msgstr "Editado pela editora %(label)s."
 
-msgid "%(name)s is a band from %(country)s, formed in %(year)s."
-msgstr "%(name)s é uma banda de %(country)s, formada em %(year)s."
-
-msgid "%(name)s is a band from %(country)s."
-msgstr "%(name)s é uma banda de %(country)s."
+msgid "%(name)s is a band formed in %(year)s (%(country)s)."
+msgstr "%(name)s é uma banda formada em %(year)s (%(country)s)."
 
 msgid "%(name)s is a band formed in %(year)s."
 msgstr "%(name)s é uma banda formada em %(year)s."
 
+msgid "%(name)s is a band (%(country)s)."
+msgstr "%(name)s é uma banda (%(country)s)."
+
 msgid "%(name)s is a band."
 msgstr "%(name)s é uma banda."
 
-msgid "Artist from %(country)s, active since %(year)s."
-msgstr "Artista de %(country)s, em atividade desde %(year)s."
-
-msgid "Artist from %(country)s."
-msgstr "Artista de %(country)s."
+msgid "Artist active since %(year)s (%(country)s)."
+msgstr "Artista em atividade desde %(year)s (%(country)s)."
 
 msgid "Artist active since %(year)s."
 msgstr "Artista em atividade desde %(year)s."
+
+msgid "Artist (%(country)s)."
+msgstr "Artista (%(country)s)."
+
+msgid "Artist."
+msgstr "Artista."

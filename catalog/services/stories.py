@@ -106,7 +106,9 @@ def import_lastfm_stories(entity: Album | Artist) -> None:
     for lang in ("en", "pt"):  # English first: it is the reference for "no translation" detection
         if is_album:
             artist_name = entity.artist.name if entity.artist else entity.artist_credit
-            infos[lang] = lastfm.album_info(artist_name, entity.title, str(entity.mbid), lang)
+            ref = entity.reference_release  # Last.fm wants a release MBID, not a release-group one
+            infos[lang] = lastfm.album_info(
+                artist_name, entity.title, str(ref.mbid) if ref else None, lang)
         else:
             infos[lang] = lastfm.artist_info(entity.name, str(entity.mbid), lang)
 
@@ -248,24 +250,25 @@ def _country_name(code: str, lang: str) -> str:
 def build_artist_fact_sheet(artist: Artist, lang: str) -> list[str]:
     country = _country_name(artist.country, lang)
     args = {"name": artist.name, "country": country, "year": artist.begin_year}
+    year, c = bool(artist.begin_year), bool(country)
     with override(lang):
         if artist.artist_type == "Group":
-            if country and artist.begin_year:
-                text = _("%(name)s is a band from %(country)s, formed in %(year)s.") % args
-            elif country:
-                text = _("%(name)s is a band from %(country)s.") % args
-            elif artist.begin_year:
+            if year and c:
+                text = _("%(name)s is a band formed in %(year)s (%(country)s).") % args
+            elif year:
                 text = _("%(name)s is a band formed in %(year)s.") % args
+            elif c:
+                text = _("%(name)s is a band (%(country)s).") % args
             else:
                 text = _("%(name)s is a band.") % args
-        elif country and artist.begin_year:
-            text = _("Artist from %(country)s, active since %(year)s.") % args
-        elif country:
-            text = _("Artist from %(country)s.") % args
-        elif artist.begin_year:
+        elif year and c:
+            text = _("Artist active since %(year)s (%(country)s).") % args
+        elif year:
             text = _("Artist active since %(year)s.") % args
+        elif c:
+            text = _("Artist (%(country)s).") % args
         else:
-            return []
+            text = _("Artist.")
     return [text]
 
 

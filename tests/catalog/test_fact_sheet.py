@@ -100,26 +100,32 @@ def test_empty_album_yields_no_paragraphs(album_factory):
 
 def test_artist_group_variants(artist_factory):
     a = artist_factory(name="Os Xis", artist_type="Group", country="PT", begin_year=1980)
-    assert build_artist_fact_sheet(a, "pt") == ["Os Xis é uma banda de Portugal, formada em 1980."]
-    assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band from Portugal, formed in 1980."]
+    assert build_artist_fact_sheet(a, "pt") == ["Os Xis é uma banda formada em 1980 (Portugal)."]
+    assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band formed in 1980 (Portugal)."]
     a.begin_year = None
-    assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band from Portugal."]
+    assert build_artist_fact_sheet(a, "pt") == ["Os Xis é uma banda (Portugal)."]
+    assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band (Portugal)."]
     a.country, a.begin_year = "", 1980
     assert build_artist_fact_sheet(a, "pt") == ["Os Xis é uma banda formada em 1980."]
+    assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band formed in 1980."]
     a.begin_year = None
+    assert build_artist_fact_sheet(a, "pt") == ["Os Xis é uma banda."]
     assert build_artist_fact_sheet(a, "en") == ["Os Xis is a band."]
 
 
 def test_artist_person_variants(artist_factory):
     a = artist_factory(name="Zé", artist_type="Person", country="BR", begin_year=1970)
-    assert build_artist_fact_sheet(a, "pt") == ["Artista de Brasil, em atividade desde 1970."]
-    assert build_artist_fact_sheet(a, "en") == ["Artist from Brazil, active since 1970."]
+    assert build_artist_fact_sheet(a, "pt") == ["Artista em atividade desde 1970 (Brasil)."]
+    assert build_artist_fact_sheet(a, "en") == ["Artist active since 1970 (Brazil)."]
     a.begin_year = None
-    assert build_artist_fact_sheet(a, "en") == ["Artist from Brazil."]
+    assert build_artist_fact_sheet(a, "pt") == ["Artista (Brasil)."]
+    assert build_artist_fact_sheet(a, "en") == ["Artist (Brazil)."]
     a.country, a.begin_year = "", 1970
     assert build_artist_fact_sheet(a, "pt") == ["Artista em atividade desde 1970."]
+    assert build_artist_fact_sheet(a, "en") == ["Artist active since 1970."]
     a.begin_year = None
-    assert build_artist_fact_sheet(a, "pt") == []
+    assert build_artist_fact_sheet(a, "pt") == ["Artista."]
+    assert build_artist_fact_sheet(a, "en") == ["Artist."]
 
 
 def test_import_stores_recorded_at_begin_date(imported_album):

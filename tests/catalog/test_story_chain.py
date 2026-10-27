@@ -81,7 +81,7 @@ def test_artist_generated(artist_factory):
     a = artist_factory(name="Os Xis", artist_type="Group", country="PT", begin_year=1980)
     v = select_story(a, "pt")
     assert v.is_generated
-    assert v.sections == [{"heading": None, "paragraphs": ["Os Xis é uma banda de Portugal, formada em 1980."]}]
+    assert v.sections == [{"heading": None, "paragraphs": ["Os Xis é uma banda formada em 1980 (Portugal)."]}]
 
 
 def test_clean_lastfm_wiki_strips_read_more():
@@ -250,3 +250,35 @@ def test_enrichers_registered_after_wikipedia():
     names = [f.__name__ for f in tasks.ALBUM_ENRICHERS]
     assert names.index("import_wikipedia_stories") < names.index("import_lastfm_stories") < names.index("import_discogs_notes")
     assert tasks.ARTIST_ENRICHERS.index(import_wikipedia_stories) < [f.__name__ for f in tasks.ARTIST_ENRICHERS].index("import_lastfm_stories")
+
+
+def test_lastfm_album_falls_back_to_name_after_mbid_miss(album, lf):
+    from catalog.models import Release
+    ref = Release.objects.create(mbid="22222222-2222-2222-2222-222222222222", album=album, title="N")
+    album.reference_release = ref; album.save()
+
+    def handler(request):
+        q = request.url.params
+        if "mbid" in q:
+            return httpx.Response(200, json=fx("lastfm/error_not_found.json"))
+        return httpx.Response(200, json=fx(f"lastfm/album_info_{q['lang']}.json"))
+    lf.route.side_effect = handler
+    import_lastfm_stories(album)
+    assert Story.objects.filter(album=album, source="lastfm").count() == 2
+    mbids = [c.request.url.params["mbid"] for c in lf.route.calls if "mbid" in c.request.url.params]
+    assert mbids and set(mbids) == {"22222222-2222-2222-2222-222222222222"}
+
+
+def test_lastfm_artist_falls_back_to_name(artist_factory, lf):
+    a = artist_factory(name="Nirvana")
+    lf.route.side_effect = lambda r: httpx.Response(200, json=fx(
+        "lastfm/error_not_found.json" if "mbid" in r.url.params else "lastfm/artist_info_en.json"))
+    import_lastfm_stories(a)
+    assert Story.objects.filter(artist=a, source="lastfm").exists()
+
+
+def test_lastfm_404_is_none(db, settings, no_sleep):
+    settings.LASTFM_API_KEY = "k"
+    with respx.mock() as router:
+        router.get(LASTFM).respond(404)
+        assert lastfm.album_info("A", "B", None, "en") is None

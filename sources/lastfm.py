@@ -28,27 +28,34 @@ def _call(method: str, ttl: timedelta = timedelta(days=30), **params) -> dict | 
     key = settings.LASTFM_API_KEY
     if not key:
         return None
-    data = http.fetch(
-        SOURCE, ENDPOINT,
-        params={"method": method, "api_key": key, "format": "json", **params}, ttl=ttl,
-    )
+    try:
+        data = http.fetch(
+            SOURCE, ENDPOINT,
+            params={"method": method, "api_key": key, "format": "json", **params}, ttl=ttl,
+        )
+    except http.SourceNotFound:
+        return None
     if not isinstance(data, dict) or "error" in data:  # Last.fm reports "not found" as HTTP 200 + error
         return None
     return data
 
 
-def _ident(artist: str, title: str, mbid: str | None) -> dict:
-    return {"mbid": mbid} if mbid else {"artist": artist, "album": title, "autocorrect": 1}
-
-
 def album_info(artist: str, title: str, mbid: str | None, lang: str) -> dict | None:
-    data = _call("album.getinfo", lang=lang, **_ident(artist, title, mbid))
+    """`mbid` must be a *release* MBID; when it (or its absence) yields nothing, retry by name."""
+    if mbid:
+        data = _call("album.getinfo", lang=lang, mbid=mbid)
+        if (data or {}).get("album"):
+            return data["album"]
+    data = _call("album.getinfo", lang=lang, artist=artist, album=title, autocorrect=1)
     return (data or {}).get("album") or None
 
 
 def artist_info(name: str, mbid: str | None, lang: str) -> dict | None:
-    ident = {"mbid": mbid} if mbid else {"artist": name, "autocorrect": 1}
-    data = _call("artist.getinfo", lang=lang, **ident)
+    if mbid:
+        data = _call("artist.getinfo", lang=lang, mbid=mbid)
+        if (data or {}).get("artist"):
+            return data["artist"]
+    data = _call("artist.getinfo", lang=lang, artist=name, autocorrect=1)
     return (data or {}).get("artist") or None
 
 
