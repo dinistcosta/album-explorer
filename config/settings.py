@@ -14,7 +14,10 @@ DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "")
 CONTACT_URL = os.environ.get("CONTACT_URL", "https://github.com/album-explorer")
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
     "django.contrib.staticfiles",
     "django.contrib.messages",
     "django_tasks_db",
@@ -29,6 +32,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
@@ -43,6 +47,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
                 "django.template.context_processors.i18n",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.static",
@@ -74,3 +79,6 @@ STORAGES = {
 # Database-backed task queue (no Redis). Worker: `python manage.py db_worker`.
 # Tests swap this for the immediate backend (tests/conftest.py).
 TASKS = {"default": {"BACKEND": "django_tasks_db.DatabaseBackend"}}
+
+# Album admin pages carry one inline row per credit; a full import easily exceeds the default 1000 fields.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
