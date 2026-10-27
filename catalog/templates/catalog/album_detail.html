@@ -22,6 +22,7 @@
         {% with n=album.reference_release.track_count %}{% if n %}{% if album.reference_release.label %} · {% endif %}{% blocktranslate count counter=n %}{{ counter }} track{% plural %}{{ counter }} tracks{% endblocktranslate %}{% endif %}{% endwith %}
         {% if total_minutes %} · {% blocktranslate with m=total_minutes %}{{ m }} min{% endblocktranslate %}{% endif %}
       </div>
+      <div id="album-links">{% include "catalog/_album_links.html" %}</div>
     </div>
   </section>
 

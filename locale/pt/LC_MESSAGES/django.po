@@ -57,8 +57,14 @@ msgstr "Fonte"
 msgid "read the full article"
 msgstr "ler o artigo completo"
 
-msgid "In their words"
-msgstr "Nas suas palavras"
+msgid "In the band's words"
+msgstr "Nas palavras da banda"
+
+msgid "Buy"
+msgstr "Comprar"
+
+msgid "Search on Discogs"
+msgstr "Procurar no Discogs"
 
 msgid "Credits"
 msgstr "Créditos"

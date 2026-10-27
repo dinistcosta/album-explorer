@@ -145,3 +145,56 @@ def test_awards_rendered_in_active_language_with_wikidata_source(client, album_f
     assert "Diamond album (1993)" in en and "Álbum de diamante" not in en
     assert 'href="https://www.wikidata.org/wiki/Q17444"' in pt
     assert "Fonte" in pt and "Source" in en
+
+
+# ---- Task 11: listen / buy links, genres, quotes --------------------------------------------
+
+def _page(client, album, lang="pt"):
+    return client.get(f"/{lang}/album/{album.mbid}/").content.decode()
+
+
+@pytest.fixture
+def linked_album(album_factory, enqueued):
+    from django.utils import timezone
+
+    from catalog.models import ExternalLink
+
+    album = album_factory(title="Nevermind", enriched_at=timezone.now())
+    ExternalLink.objects.create(album=album, kind="listen", service="spotify", url="https://open.spotify.com/album/x")
+    return album
+
+
+def test_listen_button_hidden_without_link(client, linked_album):
+    html = _page(client, linked_album)
+    assert "Spotify" in html and "Apple Music" not in html and "YouTube" not in html
+    assert 'href="https://open.spotify.com/album/x" target="_blank" rel="noopener"' in html
+    assert "autoplay" not in html
+
+
+def test_buy_link_discogs_search_always_present(client, linked_album):
+    html = _page(client, linked_album)
+    assert "Procurar no Discogs" in html
+    assert "https://www.discogs.com/search/?q=" in html and "Nevermind" in html
+    assert "Search on Discogs" in _page(client, linked_album, "en")
+
+
+def test_bandcamp_is_also_a_buy_link(client, linked_album):
+    from catalog.models import ExternalLink
+
+    ExternalLink.objects.create(album=linked_album, kind="listen", service="bandcamp", url="https://b.bandcamp.com/album/n")
+    html = _page(client, linked_album)
+    assert html.count("https://b.bandcamp.com/album/n") == 2
+
+
+def test_genre_chips_and_quote_blocks(client, linked_album):
+    from catalog.models import AlbumGenre, Genre, Quote
+
+    AlbumGenre.objects.create(album=linked_album, genre=Genre.objects.create(slug="grunge", name="grunge"), source="musicbrainz")
+    Quote.objects.create(album=linked_album, text="We made it fast", speaker="Kurt Cobain", source_label="Spin", source_url="https://e.org/s", origin="wikiquote", lang="en")
+    Quote.objects.create(album=linked_album, text="Wanted it huge", speaker="Butch Vig", source_label="Mojo", source_url="https://e.org/m", origin="wikipedia", lang="en")
+    html = _page(client, linked_album)
+    assert '<span class="chip">grunge</span>' in html
+    assert "Nas palavras da banda" in html and "We made it fast" in html and "Kurt Cobain" in html
+    assert 'href="https://e.org/s"' in html and "Wikiquote" in html
+    assert "Wanted it huge" in html and "pull-quote" in html
+    assert "In the band&#x27;s words" in _page(client, linked_album, "en") or "In the band's words" in _page(client, linked_album, "en")

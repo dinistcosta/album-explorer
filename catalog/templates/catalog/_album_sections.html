@@ -1,10 +1,19 @@
 {% load i18n catalog_extras %}
 <div id="album-sections" class="sections"{% if polling %} hx-get="{% url 'album_enrichment' album.mbid %}?n={{ next_n }}" hx-trigger="load delay:2s" hx-swap="outerHTML"{% endif %}>
+  {% if oob_links %}<div id="album-links" hx-swap-oob="true">{% include "catalog/_album_links.html" %}</div>{% endif %}
   <div class="a-liner stack">
   {% if polling %}<p class="loading" role="status">{% translate "loading…" %}</p>{% endif %}
 
+  {% if quotes %}
+  <article class="liner quotes">
+    <h3>{% translate "In the band's words" %}</h3>
+    {% for q in quotes %}{% include "catalog/_quote.html" %}{% endfor %}
+  </article>
+  {% endif %}
+
   <article class="liner">
     <h3>{% translate "The story" %}</h3>
+    {% if liner_quote %}{% with q=liner_quote %}<div class="pull-quote">{% include "catalog/_quote.html" %}</div>{% endwith %}{% endif %}
     {% if story.is_other_language %}
     <p class="notice">{% if story.lang == "en" %}{% translate "Only available in English" %}{% else %}{% translate "Only available in Portuguese" %}{% endif %}</p>
     {% endif %}
@@ -35,16 +44,6 @@
     {% endif %}
   </article>
 
-  {% if quotes %}
-  <article class="liner">
-    <h3>{% translate "In their words" %}</h3>
-    {% for q in quotes %}
-    <blockquote><p>“{{ q.text }}”</p>{% if q.speaker %}<footer>{{ q.speaker }}</footer>{% endif %}
-      {% if q.source_label %}<div class="source">{% translate "Source" %}: {% if q.source_url %}<a href="{{ q.source_url }}" rel="noopener">{{ q.source_label }}</a>{% else %}{{ q.source_label }}{% endif %}</div>{% endif %}</blockquote>
-    {% endfor %}
-  </article>
-  {% endif %}
-
   </div>
   {% if credits or awards or genres or other_releases %}
   <aside class="a-aside stack">
@@ -67,7 +66,7 @@
   {% endif %}
 
   {% if genres %}
-  <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li class="chip">{{ g.name }}</li>{% endfor %}</ul>
+  <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li><span class="chip">{{ g.name }}</span></li>{% endfor %}</ul>
   {% endif %}
 
   {% if other_releases %}

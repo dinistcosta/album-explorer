@@ -7,6 +7,7 @@ from sources.http import SourceNotFound, SourceUnavailable
 
 from .models import Album
 from .services.album_import import import_album_core
+from .services.links import discogs_search_url, listen_and_buy
 from .services.stories import select_story
 from .services.refresh import enqueue_enrichment, needs_enrichment
 
@@ -32,6 +33,12 @@ def _tracks_by_side(album):
     return [(None, tracks)]
 
 
+def _links_context(album):
+    listen, buy = listen_and_buy(album)
+    artist = album.artist.name if album.artist else album.artist_credit
+    return {"listen_links": listen, "buy_links": buy, "discogs_url": discogs_search_url(artist, album.title)}
+
+
 def _sections_context(album, n=0):
     credits = {}
     for c in album.credits.select_related("person", "place"):
@@ -41,12 +48,16 @@ def _sections_context(album, n=0):
         names = credits.setdefault(c.role, [])
         if name not in names:
             names.append(name)
+    all_quotes = list(album.quotes.order_by("id"))
+    liner_quote = next((q for q in all_quotes if q.origin == "wikipedia"), None)  # pulled into the liner notes
+    quotes = [q for q in all_quotes if q is not liner_quote]
     polling = album.enriched_at is None and n < MAX_POLLS
     return {
         "album": album,
         "credits": list(credits.items()),
         "other_releases": album.releases.exclude(pk=album.reference_release_id).order_by("date")[:12],
-        "quotes": list(album.quotes.all()),
+        "quotes": quotes,
+        "liner_quote": liner_quote,
         "story": select_story(album, get_language()),
         "awards": list(album.awards.all()),
         "genres": [ag.genre for ag in album.album_genres.select_related("genre")],
@@ -73,6 +84,7 @@ def album_detail(request, mbid):
         "album": album,
         "tracks_by_side": _tracks_by_side(album),
         "total_minutes": round(total_ms / 60000) if total_ms else None,
+        **_links_context(album),
         **_sections_context(album),
     }
     return render(request, "catalog/album_detail.html", context)
@@ -86,4 +98,4 @@ def album_enrichment(request, mbid):
         n = max(0, int(request.GET.get("n", 0)))
     except ValueError:
         n = 0
-    return render(request, "catalog/_album_sections.html", _sections_context(album, n))
+    return render(request, "catalog/_album_sections.html", {**_links_context(album), **_sections_context(album, n), "oob_links": True})
