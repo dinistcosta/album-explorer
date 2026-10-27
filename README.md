@@ -98,6 +98,14 @@ worker:  python manage.py db_worker
 
 Set `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` (plus the optional API keys and `CONTACT_URL`). On the build step run `python manage.py collectstatic --noinput` (WhiteNoise serves the files with hashed names). On first deploy, after `migrate`, run `python manage.py seed`. If your host has no release phase, run `migrate` as part of the deploy command.
 
+### Free demo: Render + Neon
+
+The live demo runs entirely on free plans: a [Render](https://render.com) free web service (described in [`render.yaml`](render.yaml)) and a [Neon](https://neon.tech) free PostgreSQL database. Render's free plan has no separate worker, so [`bin/start-free.sh`](bin/start-free.sh) runs `migrate`, starts `db_worker` in the same container and then gunicorn. The service sleeps after 15 minutes without visits; the first visit after that takes about a minute.
+
+1. Create a Neon project and copy its connection string.
+2. In Render, create a Blueprint from this repository and fill in `DATABASE_URL`, `LASTFM_API_KEY` and `DISCOGS_TOKEN` (the `SECRET_KEY` is generated for you).
+3. Seed the Neon database once from your machine: `DATABASE_URL=<neon url> python manage.py seed`.
+
 ## Tests
 
 ```bash

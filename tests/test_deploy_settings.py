@@ -50,6 +50,17 @@ def test_blank_values_in_env_file_count_as_unset(tmp_path):
     assert out.stdout.strip().splitlines()[-1] == "django.db.backends.sqlite3 https://github.com/album-explorer"
 
 
+def test_render_hostname_is_allowed_and_trusted():
+    env = {k: v for k, v in PROD_ENV.items() if k not in ("ALLOWED_HOSTS", "CSRF_TRUSTED_ORIGINS")}
+    out = run_manage(
+        "shell", "-c",
+        "from django.conf import settings as s; print(s.ALLOWED_HOSTS, s.CSRF_TRUSTED_ORIGINS)",
+        env={**env, "RENDER_EXTERNAL_HOSTNAME": "album-explorer.onrender.com"})
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.strip().splitlines()[-1] == (
+        "['album-explorer.onrender.com'] ['https://album-explorer.onrender.com']")
+
+
 def test_blank_environment_variables_count_as_unset():
     out = run_manage(
         "shell", "-c", "from django.conf import settings as s; print(s.CONTACT_URL)",
