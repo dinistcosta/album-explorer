@@ -26,7 +26,7 @@ def home(request):
 def _decade_label(decade):
     if decade is None:
         return gettext("Undated")
-    shown = decade % 100 if decade < 2000 and (get_language() or "").startswith("pt") else decade  # "Anos 60"
+    shown = f"{decade % 100:02d}" if 1920 <= decade < 2000 and (get_language() or "").startswith("pt") else decade
     return gettext("%(decade)ss") % {"decade": shown}
 
 

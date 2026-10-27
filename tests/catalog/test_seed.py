@@ -61,7 +61,7 @@ def test_seed_is_idempotent(db, seed_respx, capsys):
     assert seed_respx.recorder.ids and len(seed_respx.recorder.ids) == 1  # resumed run skipped the enriched album
     assert "skip" in second.lower() and first.strip()
     rock = Genre.objects.get(slug="rock")
-    assert rock.description == "Genre text." and "last.fm/tag/rock" in rock.description_source_url
+    assert rock.description == "Genre text." and rock.description_lang == "en" and "last.fm/tag/rock" in rock.description_source_url
 
 
 def test_seed_without_lastfm_key_notices_and_still_seeds(db, seed_respx, settings, capsys):
@@ -86,3 +86,22 @@ def test_seed_survives_unavailable_album(db, seed_respx, capsys):
     seed_respx.get(MB + f"release-group/{NEVERMIND_RG}").respond(503)
     call_command("seed", "--skip-rooms")
     assert "failed" in capsys.readouterr().out.lower()
+
+
+def test_seed_keeps_portuguese_description_when_it_differs(db, seed_respx):
+    def lastfm(request):
+        text = "Texto." if request.url.params.get("lang") == "pt" else "Text."
+        if request.url.params["method"] == "tag.getinfo":
+            return httpx.Response(200, json={"tag": {"wiki": {"summary": text}}})
+        return httpx.Response(200, json={"albums": {"album": []}})
+
+    seed_respx.lastfm.mock(side_effect=lastfm)
+    call_command("seed", "--skip-albums", "--skip-rooms")
+    rock = Genre.objects.get(slug="rock")
+    assert (rock.description, rock.description_lang) == ("Texto.", "pt")
+
+
+def test_seed_prints_a_line_per_room(db, seed_respx, capsys):
+    call_command("seed", "--skip-albums")
+    out = capsys.readouterr().out
+    assert "rock: 1 rankings stored" in out

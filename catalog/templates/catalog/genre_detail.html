@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{{ genre.name }} · Album Explorer{% endblock %}
-{% block content %}
+{% block content %}{% get_current_language as LANG %}
 <section class="genre-room">
   <p class="label">{% translate "Genre room" %}</p>
   <h1>{{ genre.name }}</h1>
   {% if genre.description %}
   <p class="genre-description">{{ genre.description }}</p>
+  {% if genre.description_lang != LANG %}<p class="notice">{% if genre.description_lang == "en" %}{% translate "Only available in English" %}{% else %}{% translate "Only available in Portuguese" %}{% endif %}</p>{% endif %}
   <div class="source">{% translate "Source" %}: {% if genre.description_source_url %}<a href="{{ genre.description_source_url }}" rel="noopener">Last.fm</a>{% else %}Last.fm{% endif %} · CC BY-SA</div>
   {% endif %}
   {% if building %}<p class="room-notice" role="status">{% translate "This room is still being assembled." %}</p>{% endif %}

@@ -67,16 +67,20 @@ class Command(BaseCommand):
     def seed_descriptions(self):
         for genre in Genre.objects.filter(featured=True, description=""):
             try:
-                info = lastfm.tag_info(genre.name, "en")
+                texts = {lang: lastfm.clean_lastfm_wiki(((lastfm.tag_info(genre.name, lang) or {}).get("wiki") or {}).get("summary", ""))
+                         for lang in ("en", "pt")}
             except SourceUnavailable:
                 self.log(f"  {genre.name}: Last.fm unavailable, description skipped")
                 continue
-            text = lastfm.clean_lastfm_wiki(((info or {}).get("wiki") or {}).get("summary", ""))
+            # Last.fm falls back to English when there is no Portuguese text: keep pt only if it differs.
+            lang = "pt" if texts["pt"] and texts["pt"] != texts["en"] else "en"
+            text = texts[lang]
             if not text:
                 continue
             genre.description = text
+            genre.description_lang = lang
             genre.description_source_url = f"https://www.last.fm/tag/{quote(genre.name)}"
-            genre.save(update_fields=["description", "description_source_url"])
+            genre.save(update_fields=["description", "description_lang", "description_source_url"])
             self.log(f"  {genre.name}: description stored")
 
     def seed_albums(self):
@@ -98,4 +102,15 @@ class Command(BaseCommand):
     def seed_rooms(self):
         for genre in Genre.objects.filter(featured=True).order_by("name"):
             self.log(f"Room {genre.name}: resolving")
-            resolve_genre_room.call(genre.pk)
+            try:
+                resolve_genre_room.call(genre.pk)
+            except Exception as exc:  # a failing room must not stop the others
+                self.log(f"  {genre.name}: failed ({exc.__class__.__name__})")
+                continue
+            rows = genre.rankings.count()
+            resolved = genre.rankings.filter(album__isnull=False).count()
+            pending = genre.rankings.filter(resolved_at__isnull=True).count()
+            if not rows:
+                self.log(f"  {genre.name}: skipped (no ranking stored)")
+            else:
+                self.log(f"  {genre.name}: {rows} rankings stored, {resolved} matched, {pending} pending")

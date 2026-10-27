@@ -196,3 +196,23 @@ def test_band_page_genre_chip_links_to_room(client, artist_factory, genre_factor
     ArtistGenre.objects.create(artist=artist, genre=genre_factory(name="shoegaze"), source="musicbrainz")
     html = client.get(f"/pt/artist/{artist.mbid}/").content.decode()
     assert 'href="/pt/genre/shoegaze/"' in html
+
+
+def test_english_description_flagged_for_pt_readers(client, genre_with_ranked_albums, enqueued_rooms):
+    assert "Disponível apenas em inglês" in client.get("/pt/genre/shoegaze/").content.decode()
+    assert "Only available in English" not in client.get("/en/genre/shoegaze/").content.decode()
+    genre_with_ranked_albums.description_lang = "pt"
+    genre_with_ranked_albums.save()
+    assert "Disponível apenas em inglês" not in client.get("/pt/genre/shoegaze/").content.decode()
+    assert "Only available in Portuguese" in client.get("/en/genre/shoegaze/").content.decode()
+
+
+def test_decade_labels(settings):
+    from django.utils import translation
+
+    from catalog.views import _decade_label
+
+    with translation.override("pt"):
+        assert [_decade_label(d) for d in (1900, 1960, 2010)] == ["Anos 1900", "Anos 60", "Anos 2010"]
+    with translation.override("en"):
+        assert [_decade_label(d) for d in (1900, 1960, 2010)] == ["1900s", "1960s", "2010s"]

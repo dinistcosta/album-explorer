@@ -157,6 +157,7 @@ class Genre(models.Model):
     featured = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     description_source_url = models.URLField(max_length=500, blank=True)
+    description_lang = models.CharField(max_length=8, default="en")
 
     def save(self, *args, **kwargs):
         self.search_name = normalize(self.name)
