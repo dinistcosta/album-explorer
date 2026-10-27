@@ -5,8 +5,10 @@ from django.utils.translation import get_language
 
 from sources.http import SourceNotFound, SourceUnavailable
 
-from .models import Album
+from .models import Album, Artist
 from .services.album_import import import_album_core
+from .services.artist_import import discography_sections, header_cover_album, import_artist_core
+from .services.stories import _country_name
 from .services.links import discogs_search_url, listen_and_buy
 from .services.stories import select_story
 from .services.refresh import enqueue_enrichment, needs_enrichment
@@ -68,7 +70,7 @@ def _sections_context(album, n=0):
 
 def album_detail(request, mbid):
     album = Album.objects.select_related("artist", "reference_release").filter(mbid=mbid).first()
-    if album is None:
+    if album is None or album.imported_at is None:  # None: a stub created from an artist's discography
         try:
             import_album_core(str(mbid), foreground=True)
         except SourceNotFound:
@@ -99,3 +101,68 @@ def album_enrichment(request, mbid):
     except ValueError:
         n = 0
     return render(request, "catalog/_album_sections.html", {**_links_context(album), **_sections_context(album, n), "oob_links": True})
+
+
+ARTIST_LINK_NAMES = {
+    "spotify": "Spotify", "apple_music": "Apple Music", "youtube": "YouTube", "bandcamp": "Bandcamp",
+    "instagram": "Instagram", "facebook": "Facebook", "x": "X", "tiktok": "TikTok", "soundcloud": "SoundCloud",
+}
+LINK_ORDER = ["official", "listen", "social"]
+
+
+def _artist_links(artist):
+    seen, out = set(), []
+    for link in sorted(artist.links.all(), key=lambda l: (LINK_ORDER.index(l.kind) if l.kind in LINK_ORDER else 9, l.id)):
+        if (link.kind, link.service) in seen:
+            continue
+        seen.add((link.kind, link.service))
+        out.append({"kind": link.kind, "service": link.service, "name": ARTIST_LINK_NAMES.get(link.service, ""), "url": link.url})
+    return out
+
+
+def _artist_context(artist, n=0):
+    lang = get_language()
+    header_album = None if artist.image_url else header_cover_album(artist)
+    polling = artist.enriched_at is None and n < MAX_POLLS
+    return {
+        "artist": artist,
+        "story": select_story(artist, lang),
+        "quotes": list(artist.quotes.order_by("id")),
+        "awards": list(artist.awards.all()),
+        "genres": [ag.genre for ag in artist.artist_genres.select_related("genre")],
+        "members": list(artist.memberships.select_related("member").order_by("begin_year", "id")),
+        "links": _artist_links(artist),
+        "influences": list(artist.influences.select_related("target_artist")),
+        "discography": discography_sections(artist),
+        "header_album": header_album,
+        "country": _country_name(artist.country, lang),
+        "polling": polling,
+        "next_n": n + 1,
+    }
+
+
+def artist_detail(request, mbid):
+    artist = Artist.objects.filter(mbid=mbid).first()
+    if artist is None or artist.imported_at is None:  # None: a member / credit stub, never imported as a band
+        try:
+            import_artist_core(str(mbid), foreground=True)
+        except SourceNotFound:
+            raise Http404("artist not found")
+        except SourceUnavailable:
+            if artist is None:
+                return render(request, "catalog/503.html", status=503)
+        artist = Artist.objects.get(mbid=mbid)
+    if needs_enrichment(artist):
+        enqueue_enrichment(artist)
+    return render(request, "catalog/artist_detail.html", _artist_context(artist))
+
+
+def artist_enrichment(request, mbid):
+    artist = get_object_or_404(Artist, mbid=mbid)
+    if needs_enrichment(artist):
+        enqueue_enrichment(artist)
+    try:
+        n = max(0, int(request.GET.get("n", 0)))
+    except ValueError:
+        n = 0
+    return render(request, "catalog/_artist_sections.html", {**_artist_context(artist, n), "oob_photo": True})

@@ -215,3 +215,57 @@ msgstr "Artista (%(country)s)."
 
 msgid "Artist."
 msgstr "Artista."
+
+msgid "Photo of %(name)s"
+msgstr "Fotografia de %(name)s"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Photo not available"
+msgstr "Fotografia indisponível"
+
+msgid "Cover"
+msgstr "Capa"
+
+msgid "Band"
+msgstr "Banda"
+
+msgid "Artist"
+msgstr "Artista"
+
+msgid "Do you know this band's story?"
+msgstr "Conheces a história desta banda?"
+
+msgid "Fact sheet built from MusicBrainz data"
+msgstr "Ficha técnica construída a partir de dados do MusicBrainz"
+
+msgid "Members"
+msgstr "Membros"
+
+msgid "Around the web"
+msgstr "Na web"
+
+msgid "Official website"
+msgstr "Site oficial"
+
+msgid "Influences"
+msgstr "Influências"
+
+msgid "Discography"
+msgstr "Discografia"
+
+msgid "Studio albums"
+msgstr "Álbuns de estúdio"
+
+msgid "EPs"
+msgstr "EPs"
+
+msgid "Live"
+msgstr "Ao vivo"
+
+msgid "Compilations"
+msgstr "Compilações"
+
+msgid "Other"
+msgstr "Outros"

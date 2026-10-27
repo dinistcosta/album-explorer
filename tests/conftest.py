@@ -78,6 +78,7 @@ def album_factory(db, artist_factory):
             "title": f"Album {n}",
             "artist_credit": overrides["artist"].name if overrides["artist"] else "",
             "primary_type": "Album",
+            "imported_at": datetime(2026, 1, 1, tzinfo=timezone.utc),  # a full import, not a discography stub
         }
         defaults.update(overrides)
         return Album.objects.create(**defaults)

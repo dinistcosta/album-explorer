@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ artist.name }} · Album Explorer{% endblock %}
+{% block content %}
+<div class="page-album page-artist">
+  <section class="a-hero">
+    <div id="artist-photo">{% include "catalog/_artist_photo.html" %}</div>
+    <div>
+      <p class="label">{% if artist.artist_type == "Group" %}{% translate "Band" %}{% else %}{% translate "Artist" %}{% endif %}</p>
+      <h1 class="album">{{ artist.name }}</h1>
+      <div class="meta">
+        {% if country %}{{ country }}{% endif %}
+        {% if artist.begin_year %}{% if country %} · {% endif %}{{ artist.begin_year }}–{{ artist.end_year|default_if_none:"" }}{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <div class="a-body">
+    {% include "catalog/_artist_sections.html" %}
+  </div>
+
+  <section class="discography">
+    <h2 class="section-title">{% translate "Discography" %}</h2>
+    {% for key, albums in discography %}{% if albums %}
+    <details class="disc-group"{% if key == "studio" %} open{% endif %}>
+      <summary>{% if key == "studio" %}{% translate "Studio albums" %}{% elif key == "ep" %}{% translate "EPs" %}{% elif key == "live" %}{% translate "Live" %}{% elif key == "compilation" %}{% translate "Compilations" %}{% else %}{% translate "Other" %}{% endif %} <span class="muted">({{ albums|length }})</span></summary>
+      {% include "catalog/_cover_grid.html" %}
+    </details>
+    {% endif %}{% endfor %}
+    <div class="source">{% translate "Source" %}: MusicBrainz</div>
+  </section>
+</div>
+{% endblock %}

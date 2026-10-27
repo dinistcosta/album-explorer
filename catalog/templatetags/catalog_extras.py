@@ -17,3 +17,9 @@ def role_label(role):
     from catalog.services.roles import role_label as label
 
     return label(role)
+
+
+@register.filter
+def cover_thumb(album):
+    """Tile image: the stored cover, else the Cover Art Archive thumbnail (404s fall back client-side)."""
+    return album.cover_url or f"https://coverartarchive.org/release-group/{album.mbid}/front-250"

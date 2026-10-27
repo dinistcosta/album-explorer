@@ -49,6 +49,9 @@ class Artist(LockableModel):
         _sync_search_name(kwargs, "name")
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse("artist_detail", kwargs={"mbid": self.mbid})
+
     def __str__(self):
         return self.name
 

@@ -16,7 +16,7 @@
     <div>
       <p class="label">{% translate "Album" %}{% if album.year %} · {{ album.year }}{% endif %}</p>
       <h1 class="album">{{ album.title }}</h1>
-      <div class="artist">{{ album.artist.name|default:album.artist_credit }}</div>
+      <div class="artist">{% if album.artist %}<a href="{{ album.artist.get_absolute_url }}">{{ album.artist.name }}</a>{% else %}{{ album.artist_credit }}{% endif %}</div>
       <div class="meta">
         {% if album.reference_release.label %}{{ album.reference_release.label }}{% endif %}
         {% with n=album.reference_release.track_count %}{% if n %}{% if album.reference_release.label %} · {% endif %}{% blocktranslate count counter=n %}{{ counter }} track{% plural %}{{ counter }} tracks{% endblocktranslate %}{% endif %}{% endwith %}

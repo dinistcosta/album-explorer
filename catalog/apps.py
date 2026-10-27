@@ -12,3 +12,4 @@ class CatalogConfig(AppConfig):
         from .services import genres  # noqa: F401
         from .services import links  # noqa: F401
         from .services import quotes  # noqa: F401
+        from .services import artist_import  # noqa: F401

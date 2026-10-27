@@ -1,0 +1,9 @@
+{% load i18n catalog_extras %}<ul class="cover-grid">
+  {% for album in albums %}
+  <li><a href="{{ album.get_absolute_url }}" class="tile">
+    <span class="tile-cover"><img src="{{ album|cover_thumb }}" alt="" loading="lazy" onerror="this.hidden=true"></span>
+    <span class="tile-title">{{ album.title }}</span>
+    {% if album.year %}<span class="tile-year">{{ album.year }}</span>{% endif %}
+  </a></li>
+  {% endfor %}
+</ul>
