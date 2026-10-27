@@ -92,3 +92,36 @@ msgstr "Esta página não está no museu"
 
 msgid "Back to the start"
 msgstr "Voltar ao início"
+
+msgid "Producer"
+msgstr "Produtor"
+
+msgid "Mix"
+msgstr "Mistura"
+
+msgid "Engineering"
+msgstr "Engenharia"
+
+msgid "Recording engineering"
+msgstr "Engenharia de gravação"
+
+msgid "Mastering"
+msgstr "Masterização"
+
+msgid "Audio"
+msgstr "Som"
+
+msgid "Recorded at"
+msgstr "Gravado em"
+
+msgid "Instruments"
+msgstr "Instrumentos"
+
+msgid "Vocals"
+msgstr "Voz"
+
+msgid "Arrangements"
+msgstr "Arranjos"
+
+msgid "Conducting"
+msgstr "Direção"

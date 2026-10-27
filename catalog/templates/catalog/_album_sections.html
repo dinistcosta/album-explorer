@@ -1,5 +1,6 @@
-{% load i18n %}
+{% load i18n catalog_extras %}
 <div id="album-sections" class="sections"{% if polling %} hx-get="{% url 'album_enrichment' album.mbid %}?n={{ next_n }}" hx-trigger="load delay:2s" hx-swap="outerHTML"{% endif %}>
+  {% if polling or stories or quotes %}
   <div class="a-liner stack">
   {% if polling %}<p class="loading" role="status">{% translate "loading…" %}</p>{% endif %}
 
@@ -27,12 +28,14 @@
   {% endif %}
 
   </div>
+  {% endif %}
+  {% if credits or awards or genres or other_releases %}
   <aside class="a-aside stack">
   {% if credits %}
   <div class="box credits">
     <h3>{% translate "Credits" %}</h3>
     <dl>
-      {% for role, names in credits %}<dt>{{ role }}</dt><dd>{{ names|join:", " }}</dd>{% endfor %}
+      {% for role, names in credits %}<dt>{{ role|role_label }}</dt><dd>{{ names|join:", " }}</dd>{% endfor %}
     </dl>
     <div class="source">{% translate "Source" %}: MusicBrainz</div>
   </div>
@@ -54,4 +57,5 @@
   <p class="editions">{% translate "Other editions" %}: {% for r in other_releases %}{{ r.title }}{% if r.date %} ({{ r.date }}){% endif %}{% if r.formats %} {{ r.formats|join:"/" }}{% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
   {% endif %}
   </aside>
+  {% endif %}
 </div>

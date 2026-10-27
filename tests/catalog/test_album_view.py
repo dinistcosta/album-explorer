@@ -130,3 +130,9 @@ def test_custom_404_template(client, db, settings):
     settings.DEBUG = False
     r = client.get("/pt/album/not-a-uuid/")
     assert r.status_code == 404 and "museu" in r.content.decode()
+
+
+def test_credit_roles_translated(client, imported_album):
+    pt = client.get(f"/pt/album/{imported_album.mbid}/sections/").content.decode()
+    en = client.get(f"/en/album/{imported_album.mbid}/sections/").content.decode()
+    assert "Produtor" in pt and "Producer" in en

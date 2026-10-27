@@ -10,3 +10,10 @@ def duration(ms):
         return "—"
     seconds = round(ms / 1000)
     return f"{seconds // 60}:{seconds % 60:02d}"
+
+
+@register.filter
+def role_label(role):
+    from catalog.services.roles import role_label as label
+
+    return label(role)
