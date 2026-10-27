@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 from catalog.services.text import normalize
 
@@ -76,6 +77,9 @@ class Album(LockableModel):
         self.search_name = normalize(self.title)
         _sync_search_name(kwargs, "title")
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("album_detail", kwargs={"mbid": self.mbid})
 
     def __str__(self):
         return self.title

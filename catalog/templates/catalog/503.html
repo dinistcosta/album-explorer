@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Source unavailable" %} · Album Explorer{% endblock %}
+{% block content %}
+<section class="error-page">
+  <p class="label">503</p>
+  <h1>{% translate "The sources are not answering right now" %}</h1>
+  <p>{% translate "We could not fetch this album from MusicBrainz. Nothing is lost." %}</p>
+  <p><a href="{{ request.get_full_path }}">{% translate "Try again" %}</a></p>
+</section>
+{% endblock %}

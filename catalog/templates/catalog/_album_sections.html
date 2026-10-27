@@ -1,0 +1,57 @@
+{% load i18n %}
+<div id="album-sections" class="sections"{% if polling %} hx-get="{% url 'album_enrichment' album.mbid %}?n={{ next_n }}" hx-trigger="load delay:2s" hx-swap="outerHTML"{% endif %}>
+  <div class="a-liner stack">
+  {% if polling %}<p class="loading" role="status">{% translate "loading…" %}</p>{% endif %}
+
+  {% if stories %}
+  {% for story in stories %}
+  <article class="liner">
+    <h3>{% translate "The story" %}</h3>
+    {% for section in story.sections %}
+      {% if section.heading %}<h4>{{ section.heading }}</h4>{% endif %}
+      {% for p in section.paragraphs %}<p>{{ p }}</p>{% endfor %}
+    {% endfor %}
+    <div class="source">{% translate "Source" %}: {{ story.get_source_display }}{% if story.license %} · {{ story.license }}{% endif %}{% if story.url %} · <a href="{{ story.url }}" rel="noopener">{% translate "read the full article" %} ↗</a>{% endif %}</div>
+  </article>
+  {% endfor %}
+  {% endif %}
+
+  {% if quotes %}
+  <article class="liner">
+    <h3>{% translate "In their words" %}</h3>
+    {% for q in quotes %}
+    <blockquote><p>“{{ q.text }}”</p>{% if q.speaker %}<footer>{{ q.speaker }}</footer>{% endif %}
+      {% if q.source_label %}<div class="source">{% translate "Source" %}: {% if q.source_url %}<a href="{{ q.source_url }}" rel="noopener">{{ q.source_label }}</a>{% else %}{{ q.source_label }}{% endif %}</div>{% endif %}</blockquote>
+    {% endfor %}
+  </article>
+  {% endif %}
+
+  </div>
+  <aside class="a-aside stack">
+  {% if credits %}
+  <div class="box credits">
+    <h3>{% translate "Credits" %}</h3>
+    <dl>
+      {% for role, names in credits %}<dt>{{ role }}</dt><dd>{{ names|join:", " }}</dd>{% endfor %}
+    </dl>
+    <div class="source">{% translate "Source" %}: MusicBrainz</div>
+  </div>
+  {% endif %}
+
+  {% if awards %}
+  <div class="box awards">
+    <h3>{% translate "Awards and honours" %}</h3>
+    <ul>{% for a in awards %}<li>{% if LANGUAGE_CODE == "pt" %}{{ a.name_pt|default:a.name_en }}{% else %}{{ a.name_en|default:a.name_pt }}{% endif %}{% if a.year %} ({{ a.year }}){% endif %}</li>{% endfor %}</ul>
+    <div class="source">{% translate "Source" %}: Wikidata</div>
+  </div>
+  {% endif %}
+
+  {% if genres %}
+  <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li class="chip">{{ g.name }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  {% if other_releases %}
+  <p class="editions">{% translate "Other editions" %}: {% for r in other_releases %}{{ r.title }}{% if r.date %} ({{ r.date }}){% endif %}{% if r.formats %} {{ r.formats|join:"/" }}{% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
+  {% endif %}
+  </aside>
+</div>

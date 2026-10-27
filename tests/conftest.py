@@ -1,6 +1,21 @@
 from datetime import datetime, timedelta, timezone
 
+import json
+import re
+from pathlib import Path
+
+import httpx
 import pytest
+import respx
+
+from tests.ids import NEVERMIND_RG
+
+FIX = Path(__file__).parent / "fixtures" / "musicbrainz"
+BASE = "https://musicbrainz.org/ws/2/"
+
+
+def load(name):
+    return json.loads((FIX / name).read_text())
 
 
 class FakeClock:
@@ -68,3 +83,30 @@ def album_factory(db, artist_factory):
         return Album.objects.create(**defaults)
 
     return make
+
+
+@pytest.fixture
+def mb_fixtures(no_sleep):
+    """The recorded browse list's rule-chosen reference/vinyl ids differ from the recorded
+    full-release fixtures, so full-release requests are answered with the recorded reference
+    (or vinyl) payload re-labelled with the requested id."""
+    from catalog.services.editions import choose_reference_release, vinyl_candidates
+
+    releases = load("nevermind_releases.json")["releases"]
+    vinyl_ids = {r["id"] for r in vinyl_candidates(releases)}
+    router = respx.mock(assert_all_called=False)
+
+    def full_release(request):
+        rid = request.url.path.rsplit("/", 1)[1]
+        data = load("nevermind_vinyl.json" if rid in vinyl_ids else "nevermind_reference.json")
+        return httpx.Response(200, json={**data, "id": rid})
+
+    with router:
+        router.get(f"{BASE}release-group/{NEVERMIND_RG}").respond(200, json=load("nevermind_rg.json"))
+        router.full_release = router.get(
+            url__regex=re.escape(BASE) + r"release/[0-9a-f-]{36}\?").mock(side_effect=full_release)
+        router.get(url__regex=re.escape(BASE) + r"release\?").respond(200, json={
+            "release-count": len(releases), "releases": releases})
+        router.reference_id = choose_reference_release(releases)["id"]
+        router.vinyl_ids = vinyl_ids
+        yield router

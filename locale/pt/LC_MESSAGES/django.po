@@ -15,3 +15,80 @@ msgstr "Pesquisa uma banda ou um álbum"
 
 msgid "Search"
 msgstr "Pesquisar"
+
+msgid "Cover of %(title)s"
+msgstr "Capa de %(title)s"
+
+msgid "Cover not available"
+msgstr "Capa indisponível"
+
+msgid "Album"
+msgstr "Álbum"
+
+msgid "%(counter)s track"
+msgid_plural "%(counter)s tracks"
+msgstr[0] "%(counter)s faixa"
+msgstr[1] "%(counter)s faixas"
+
+msgid "%(m)s min"
+msgstr "%(m)s min"
+
+msgid "Tracklist"
+msgstr "Alinhamento"
+
+msgid "Side A"
+msgstr "Lado A"
+
+msgid "Side B"
+msgstr "Lado B"
+
+msgid "Side %(side)s"
+msgstr "Lado %(side)s"
+
+msgid "loading…"
+msgstr "a carregar…"
+
+msgid "The story"
+msgstr "A história"
+
+msgid "Source"
+msgstr "Fonte"
+
+msgid "read the full article"
+msgstr "ler o artigo completo"
+
+msgid "In their words"
+msgstr "Nas suas palavras"
+
+msgid "Credits"
+msgstr "Créditos"
+
+msgid "Awards and honours"
+msgstr "Prémios e distinções"
+
+msgid "Genres"
+msgstr "Géneros"
+
+msgid "Other editions"
+msgstr "Outras edições"
+
+msgid "Source unavailable"
+msgstr "Fonte indisponível"
+
+msgid "The sources are not answering right now"
+msgstr "As fontes não estão a responder neste momento"
+
+msgid "We could not fetch this album from MusicBrainz. Nothing is lost."
+msgstr "Não conseguimos obter este álbum do MusicBrainz. Não se perdeu nada."
+
+msgid "Try again"
+msgstr "Tenta outra vez"
+
+msgid "Not found"
+msgstr "Não encontrado"
+
+msgid "This page is not in the museum"
+msgstr "Esta página não está no museu"
+
+msgid "Back to the start"
+msgstr "Voltar ao início"
