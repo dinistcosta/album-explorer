@@ -56,3 +56,9 @@ def test_blank_environment_variables_count_as_unset():
         env={**PROD_ENV, "CONTACT_URL": "", "DATABASE_URL": ""})
     assert out.returncode == 0, out.stderr
     assert out.stdout.strip().splitlines()[-1] == "https://github.com/album-explorer"
+
+
+def test_log_lines_are_emitted_once():
+    code = ("import logging; logging.getLogger('django.tasks').info('ONCE-MARKER')")
+    out = run_manage("shell", "-c", code, env={"DEBUG": "1"})
+    assert (out.stdout + out.stderr).count("ONCE-MARKER") == 1, out.stdout + out.stderr

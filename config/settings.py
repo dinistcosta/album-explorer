@@ -140,5 +140,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {"plain": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"}},
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    # Django's own console handler would duplicate every line the root handler already prints.
+    "loggers": {"django": {"handlers": [], "propagate": True}},
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
 }
