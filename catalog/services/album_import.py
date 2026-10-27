@@ -177,7 +177,7 @@ def apply_vinyl_sides(album: Album) -> None:
     if reference is None:
         return
     ref_dict = {"media": [{"tracks": [
-        {"number": t.number, "recording": {"id": str(t.recording_mbid)}}
+        {"number": t.number, "title": t.title, "recording": {"id": str(t.recording_mbid)}}
         for t in reference.tracks.all() if t.recording_mbid
     ]}]}
     others = [_as_release_dict(r) for r in album.releases.exclude(pk=reference.pk)]

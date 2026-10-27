@@ -8,9 +8,13 @@ def rel(id, date="", status="Official", formats=("CD",)):
     return r
 
 
-def release_with(recordings, numbers=None):
+def release_with(recordings, numbers=None, titles=None):
     numbers = numbers or [str(i + 1) for i in range(len(recordings))]
-    tracks = [{"number": n, "recording": {"id": r}} for r, n in zip(recordings, numbers)]
+    titles = titles or [f"Song {r}" for r in recordings]
+    tracks = [
+        {"number": n, "title": t, "recording": {"id": r}}
+        for r, n, t in zip(recordings, numbers, titles)
+    ]
     return {"media": [{"tracks": tracks}]}
 
 
@@ -58,3 +62,21 @@ def test_no_sides_when_tracklists_differ():
 
 def test_no_sides_when_vinyl_numbers_are_plain():
     assert assign_sides(release_with(["r1"]), release_with(["r1"], numbers=["1"])) is None
+
+
+def test_sides_when_vinyl_title_extends_reference_title():
+    ref = release_with(["r1", "r2"], titles=["Polly", "Something in the Way"])
+    vin = release_with(
+        ["r1", "r9"], numbers=["A1", "B1"], titles=["Polly", "Something in the Way / Endless, Nameless"]
+    )
+    assert assign_sides(ref, vin) == {"r1": "A", "r2": "B"}
+
+
+def test_no_sides_when_titles_unrelated_and_recordings_differ():
+    ref = release_with(["r1", "r2"], titles=["Polly", "Lithium"])
+    vin = release_with(["r1", "r9"], numbers=["A1", "B1"], titles=["Polly", "Breed"])
+    assert assign_sides(ref, vin) is None
+
+
+def test_no_sides_when_track_counts_differ():
+    assert assign_sides(release_with(["r1", "r2"]), release_with(["r1"], numbers=["A1"])) is None

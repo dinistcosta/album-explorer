@@ -91,12 +91,18 @@ def test_import_unknown_mbid_raises_not_found(db, no_sleep):
     assert not Album.objects.exists()
 
 
-def test_fixture_vinyl_has_different_last_recording_so_no_sides(db, mb_fixtures):
-    # The recorded 2009 vinyl splits "Something in the Way / Endless, Nameless" into a
-    # different recording, so its recording sequence differs from the reference: no sides.
+def test_recorded_vinyl_gets_sides_from_recorded_reference():
+    from catalog.services.editions import assign_sides
+
+    sides = assign_sides(load("nevermind_reference.json"), load("nevermind_vinyl.json"))
+    assert sorted(sides.values()) == ["A"] * 6 + ["B"] * 6
+
+
+def test_apply_vinyl_sides_with_recorded_fixtures(db, mb_fixtures):
     album = import_album_core(NEVERMIND_RG, foreground=True)
     apply_vinyl_sides(album)
-    assert not album.reference_release.tracks.exclude(side=None).exists()
+    sides = list(album.reference_release.tracks.values_list("side", flat=True))
+    assert sides == ["A"] * 6 + ["B"] * 6
 
 
 def test_apply_vinyl_sides_sets_sides_on_match(db, mb_fixtures):
