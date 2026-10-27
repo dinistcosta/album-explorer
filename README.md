@@ -2,7 +2,7 @@
 
 A bilingual (Portuguese / English) **museum of albums**. You arrive with the records you already love, look one up, and get to know it properly: how it was made, by whom, and what story it carries. Every album page is laid out like a museum placard: a vinyl sleeve, the tracklist (by side when a vinyl pressing lines up), liner notes, quotes, credits, awards, and where to listen or buy, with the source of each piece shown right next to it.
 
-> **Live demo:** coming soon.
+> **Live demo:** [album-explorer-omi0.onrender.com](https://album-explorer-omi0.onrender.com/en/) (free hosting: the first visit after a quiet spell takes about a minute to wake up).
 
 This is phase 1 of a longer project, built as a portfolio demo: a real, working site whose architecture is meant to survive real users (caching, isolated data sources, rate limiting, background work, two languages), not a mock-up.
 
