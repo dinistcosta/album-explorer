@@ -48,7 +48,7 @@ def _classified(relations) -> dict[str, tuple[str, str]]:
     return found
 
 
-MAX_STREAMING_RELEASES = 3
+MAX_STREAMING_RELEASES = 5
 
 
 def _streaming_candidates(album: Album) -> list:

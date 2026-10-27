@@ -107,4 +107,4 @@ def test_streaming_links_come_from_digital_releases_not_the_cassette_reference(i
     import_album_links(album)
     assert sorted(album.links.values_list("service", flat=True)) == ["apple_music", "spotify"]
     assert calls == [str(first.mbid)]  # stopped as soon as Spotify and Apple Music were covered
-    assert len(calls) <= 3
+    assert len(calls) <= 5
