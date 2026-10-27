@@ -29,7 +29,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 .page-album h1.album { font-family: "Playfair Display", serif; font-weight: 500; font-size: clamp(36px, 6vw, 64px); margin: 4px 0 0; line-height: 1; overflow-wrap: anywhere; }
 .artist { font-size: 20px; color: var(--accent); margin-top: 6px; }
 .meta { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--muted); margin-top: 10px; }
-.sleeve-wrap { position: relative; width: min(100%, 380px); aspect-ratio: 1; }
+.sleeve-wrap { position: relative; width: min(73%, 380px); aspect-ratio: 1; }
 .disc { position: absolute; top: 4%; left: 4%; width: 92%; aspect-ratio: 1; border-radius: 50%;
   background: repeating-radial-gradient(circle, #111 0 2px, #1b1b1b 2px 4px);
   box-shadow: 0 10px 30px rgba(0,0,0,.6); transition: transform 1.2s cubic-bezier(.2,.8,.2,1); transform: translateX(0); }
@@ -41,19 +41,22 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 .sleeve.placeholder { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 80%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 55%, #000) 100%); padding: 18px; }
 .sleeve.placeholder span { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: rgba(255,255,255,.8); }
 .sleeve-wrap.out .disc { transform: translateX(38%); }
-.sleeve-wrap.out:hover .disc { transform: translateX(55%) rotate(40deg); }
+.sleeve-wrap.out:hover .disc { transform: translateX(38%) rotate(40deg); }
 .sleeve-wrap.no-motion .disc { transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .disc { transition: none; transform: translateX(38%); }
   .sleeve-wrap.out:hover .disc { transform: translateX(38%); }
 }
-.a-hero { display: grid; grid-template-columns: minmax(0, 380px) 1fr; gap: 48px; align-items: end; padding-bottom: 36px; border-bottom: 1px solid var(--line); }
+/* The first column is wide enough to hold the sleeve (73%) plus the disc sliding out of it (to 98%), so the disc never reaches the text. */
+.a-hero { display: grid; grid-template-columns: minmax(0, min(520px, 52%)) 1fr; gap: 48px; align-items: end; padding-bottom: 36px; border-bottom: 1px solid var(--line); }
 .a-body { display: grid; grid-template-columns: 1.6fr 1fr; grid-template-areas: "tracks aside" "liner aside"; gap: 32px; margin-top: 36px; align-items: start; }
 .a-body > *, .sections > * { min-width: 0; }
 .sections { display: contents; }
 .a-tracks { grid-area: tracks; }
 .a-liner { grid-area: liner; }
 .a-aside { grid-area: aside; }
+.a-disco { grid-area: disco; min-width: 0; }
+.page-artist .a-body { grid-template-areas: "liner aside" "disco aside"; }
 .a-aside:empty { display: none; }
 .stack > * + * { margin-top: 20px; }
 .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -87,6 +90,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
   .a-hero, .sides { grid-template-columns: 1fr; gap: 24px; }
   .a-body { grid-template-columns: 1fr; grid-template-areas: "tracks" "liner" "aside"; gap: 24px; }
   .sleeve-wrap { width: 70%; }
+  .page-artist .a-body { grid-template-areas: "liner" "disco" "aside"; }
 }
 .liner .notice { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #7a6a52; margin: 0 0 12px; }
 .liner h4 { font-family: "Playfair Display", serif; font-size: 18px; margin: 16px 0 8px; }
@@ -113,7 +117,7 @@ a.chip:hover, a.chip:focus-visible { border-color: var(--accent, currentColor); 
 .members li, .influences li { padding: 5px 0; border-bottom: 1px solid var(--line); }
 .members .years { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .muted { color: var(--muted); font-size: .9em; }
-.discography { margin-top: 48px; }
+.discography { margin-top: 0; }
 .section-title { font-family: "Playfair Display", serif; font-weight: 500; font-size: 28px; margin: 0 0 16px; }
 .disc-group { border-top: 1px solid var(--line); padding: 12px 0; }
 .disc-group summary { cursor: pointer; font-family: "IBM Plex Mono", monospace; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }

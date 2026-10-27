@@ -239,3 +239,12 @@ def test_stub_album_with_source_down_is_503(client, album_factory, no_sleep):
     with respx.mock:
         respx.get(url__regex=r".*").respond(503)
         assert client.get(f"/pt/album/{album.mbid}/").status_code == 503
+
+
+def test_discography_sits_in_the_main_grid(client, db, artist_factory, enqueued):
+    """The band page reads top-down: story, then discography, both in the grid beside the aside."""
+    a = artist_factory(imported_at=__import__("django").utils.timezone.now())
+    html = client.get(a.get_absolute_url()).content.decode()
+    body = html[html.index('class="a-body"'):]
+    assert body.index("a-liner") < body.index("a-disco")
+    assert 'class="discography a-disco"' in html

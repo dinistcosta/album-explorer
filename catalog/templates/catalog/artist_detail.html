@@ -17,9 +17,8 @@
 
   <div class="a-body">
     {% include "catalog/_artist_sections.html" %}
-  </div>
 
-  <section class="discography">
+  <section class="discography a-disco">
     <h2 class="section-title">{% translate "Discography" %}</h2>
     {% for key, albums in discography %}{% if albums %}
     <details class="disc-group"{% if key == "studio" %} open{% endif %}>
@@ -29,5 +28,6 @@
     {% endif %}{% endfor %}
     <div class="source">{% translate "Source" %}: MusicBrainz</div>
   </section>
+  </div>
 </div>
 {% endblock %}
