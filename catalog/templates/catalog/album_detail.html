@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n static catalog_extras %}
 {% block title %}{{ album.title }} · {{ album.artist_credit }} · Album Explorer{% endblock %}
-{% block accent %}{{ album.accent_color|default:"#c8a45a" }}{% endblock %}
+{% block accent %}{{ album.accent_color }}{% endblock %}
 {% block content %}
 <div class="page-album">
   <section class="a-hero">
@@ -23,6 +23,7 @@
         {% if total_minutes %} · {% blocktranslate with m=total_minutes %}{{ m }} min{% endblocktranslate %}{% endif %}
       </div>
       <div id="album-links">{% include "catalog/_album_links.html" %}</div>
+      {% if album.cover_url %}<div class="source cover-source">{% translate "Cover" %}: <a href="https://coverartarchive.org/release-group/{{ album.mbid }}" rel="noopener">Cover Art Archive</a></div>{% endif %}
     </div>
   </section>
 
@@ -41,6 +42,7 @@
         </div>
         {% endfor %}
       </div>
+      <div class="source">{% translate "Source" %}: MusicBrainz</div>
     </div>
     {% endif %}
     {% include "catalog/_album_sections.html" %}

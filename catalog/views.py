@@ -171,7 +171,6 @@ def _artist_context(artist, n=0):
         "genres": [ag.genre for ag in artist.artist_genres.select_related("genre")],
         "members": list(artist.memberships.select_related("member").order_by("begin_year", "id")),
         "links": _artist_links(artist),
-        "influences": list(artist.influences.select_related("target_artist")),
         "discography": discography_sections(artist),
         "header_album": header_album,
         "country": _country_name(artist.country, lang),

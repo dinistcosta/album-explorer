@@ -38,7 +38,7 @@
   {% endif %}
   </div>
 
-  {% if members or links or awards or influences or genres %}
+  {% if members or links or awards or genres %}
   <aside class="a-aside stack">
   {% if genres %}
   <ul class="chips" aria-label="{% translate 'Genres' %}">{% for g in genres %}<li><a class="chip" href="{% url 'genre_detail' g.slug %}">{{ g.name }}</a></li>{% endfor %}</ul>
@@ -64,13 +64,7 @@
   </div>
   {% endif %}
 
-  {% if influences %}
-  <div class="box influences">
-    <h3>{% translate "Influences" %}</h3>
-    <ul>{% for i in influences %}<li>{% if i.target_artist %}<a href="{{ i.target_artist.get_absolute_url }}">{{ i.target_artist.name }}</a>{% else %}{{ i.target_label|default:i.target_wikidata_id }}{% endif %}</li>{% endfor %}</ul>
-    <div class="source">{% translate "Source" %}: {% if artist.wikidata_id %}<a href="https://www.wikidata.org/wiki/{{ artist.wikidata_id }}" rel="noopener">Wikidata</a>{% else %}Wikidata{% endif %}</div>
-  </div>
-  {% endif %}
+  {# Influences are stored (Wikidata P737) but shown only from phase 2 on. #}
 
   {% if awards %}
   <div class="box awards">

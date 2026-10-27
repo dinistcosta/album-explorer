@@ -84,8 +84,8 @@ msgstr "Fonte indisponível"
 msgid "The sources are not answering right now"
 msgstr "As fontes não estão a responder neste momento"
 
-msgid "We could not fetch this album from MusicBrainz. Nothing is lost."
-msgstr "Não conseguimos obter este álbum do MusicBrainz. Não se perdeu nada."
+msgid "We couldn't fetch this page from MusicBrainz. Nothing is lost."
+msgstr "Não conseguimos ir buscar esta página ao MusicBrainz. Não se perdeu nada."
 
 msgid "Try again"
 msgstr "Tenta outra vez"
@@ -366,3 +366,24 @@ msgstr "Sem data"
 #, python-format
 msgid "%(decade)ss"
 msgstr "Anos %(decade)s"
+
+msgid "Unlock all fields"
+msgstr "Desbloquear todos os campos"
+
+msgid "Unlocked %(n)d item(s)."
+msgstr "%(n)d item(ns) desbloqueado(s)."
+
+msgid "Refresh now"
+msgstr "Atualizar agora"
+
+msgid "Refresh started for “%(title)s”."
+msgstr "Atualização iniciada para “%(title)s”."
+
+msgid "Refresh started for %(n)d artist(s)."
+msgstr "Atualização iniciada para %(n)d artista(s)."
+
+msgid "Could not refresh “%(title)s”: source unavailable."
+msgstr "Não foi possível atualizar “%(title)s”: fonte indisponível."
+
+msgid "Could not refresh “%(title)s”: MusicBrainz no longer has this album."
+msgstr "Não foi possível atualizar “%(title)s”: o MusicBrainz já não tem este álbum."

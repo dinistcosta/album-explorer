@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+{# Rendered without a request or context by Django's server_error handler: no i18n, so both languages. #}
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Erro · Error · Album Explorer</title>
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body style="--accent: #c8a45a">
+<header class="site-header">
+  <a class="brand" href="/">Album Explorer</a>
+</header>
+<main>
+<section class="error-page">
+  <p class="label">500</p>
+  <h1>Algo correu mal do nosso lado.</h1>
+  <h1 lang="en">Something went wrong on our side.</h1>
+  <p><a href="/">Voltar ao início</a> · <a href="/en/" lang="en">Back to the start</a></p>
+</section>
+</main>
+</body>
+</html>

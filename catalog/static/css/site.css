@@ -74,7 +74,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 .source { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #7a6a52; border-top: 1px dashed #c9b895; padding-top: 10px; margin-top: 6px; }
 .box { border: 1px solid var(--line); background: var(--bg-2); padding: 18px; border-radius: 4px; }
 .box h3 { margin: 0 0 12px; font-size: 16px; }
-.box .source { color: var(--muted); border-color: var(--line); }
+.box .source, .cover-source, .a-tracks > .source { color: var(--muted); border-color: var(--line); }
+.cover-source { margin-top: 18px; }
 .credits dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
 .credits dt { font-family: "IBM Plex Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding-top: 2px; }
 .credits dd { margin: 0; }

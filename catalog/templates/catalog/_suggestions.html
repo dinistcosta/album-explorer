@@ -1,4 +1,4 @@
-{% load i18n %}{% if s.artists or s.albums %}<ul class="suggest-list" role="listbox" aria-label="{% translate 'Suggestions' %}">
-  {% for a in s.artists %}<li role="option"><a href="{{ a.get_absolute_url }}">{{ a.name }}</a> <span class="label">{% translate "Band" %}</span></li>{% endfor %}
-  {% for a in s.albums %}<li role="option"><a href="{{ a.get_absolute_url }}">{{ a.title }}</a>{% if a.artist_credit %} <span class="label">{{ a.artist_credit }}</span>{% endif %}</li>{% endfor %}
+{% load i18n %}{% if s.artists or s.albums %}<ul class="suggest-list" aria-label="{% translate 'Suggestions' %}">
+  {% for a in s.artists %}<li><a href="{{ a.get_absolute_url }}">{{ a.name }}</a> <span class="label">{% translate "Band" %}</span></li>{% endfor %}
+  {% for a in s.albums %}<li><a href="{{ a.get_absolute_url }}">{{ a.title }}</a>{% if a.artist_credit %} <span class="label">{{ a.artist_credit }}</span>{% endif %}</li>{% endfor %}
 </ul>{% endif %}
