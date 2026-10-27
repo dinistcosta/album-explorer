@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from catalog.models import Album, Artist, ExternalLink, Membership
 from catalog.services.album_import import _artist_values, _upsert_artist, _year
-from catalog.services.genres import attach_genres
+from catalog.services.genres import attach_genres, significant_genre_names
 from catalog.services.links import classify_url
 from catalog.tasks import register_artist_enricher
 from sources import musicbrainz as mb
@@ -120,7 +120,7 @@ def import_artist_core(mbid: str, *, foreground: bool) -> Artist:
 
         _upsert_stubs(artist, groups)
 
-    attach_genres(artist, [g["name"] for g in data.get("genres") or [] if g.get("name")], "musicbrainz")
+    attach_genres(artist, significant_genre_names(data.get("genres")), "musicbrainz")
     return artist
 
 

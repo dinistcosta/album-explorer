@@ -23,6 +23,22 @@ def match_genre(name: str) -> Genre | None:
     return None
 
 
+MAX_MB_GENRES = 8
+
+
+def significant_genre_names(genres: list[dict]) -> list[str]:
+    """MusicBrainz genre objects ({"name", "count"}) cut to the ones people actually agree on:
+    vote count >= max(2, 25% of the top count), at most 8, most-voted first.
+    Objects without counts (older data) are kept in order, up to the cap."""
+    named = [g for g in genres or [] if g.get("name")]
+    top = max((g.get("count") or 0 for g in named), default=0)
+    if top:
+        floor = max(2, top * 0.25)
+        named = [g for g in named if (g.get("count") or 0) >= floor]
+        named.sort(key=lambda g: -(g.get("count") or 0))
+    return [g["name"] for g in named[:MAX_MB_GENRES]]
+
+
 def attach_genres(entity, names: list[str], source: str) -> None:
     """Make `entity`'s genres for `source` exactly the known genres among `names`."""
     through, owner = (AlbumGenre, "album") if isinstance(entity, Album) else (ArtistGenre, "artist")
@@ -36,7 +52,7 @@ def attach_genres(entity, names: list[str], source: str) -> None:
 def import_album_genres(album: Album) -> None:
     group = mb.get_release_group(str(album.mbid))
     artist = album.artist.name if album.artist else album.artist_credit
-    attach_genres(album, [g["name"] for g in group.get("genres") or [] if g.get("name")], "musicbrainz")
+    attach_genres(album, significant_genre_names(group.get("genres")), "musicbrainz")
     attach_genres(album, lastfm.album_top_tags(artist, album.title), "lastfm")
     attach_genres(album, list(album.discogs_styles or []), "discogs")
 

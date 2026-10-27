@@ -107,7 +107,7 @@ def test_core_fields_links_genres_stubs(db, nirvana_respx):
     assert Album.objects.filter(artist=artist).count() == 100
     nevermind = Album.objects.get(title="Nevermind")
     assert nevermind.year == 1991 and nevermind.imported_at is None and nevermind.artist == artist
-    assert set(ArtistGenre.objects.filter(artist=artist).values_list("genre__slug", flat=True)) == {"grunge", "punk-rock"}
+    assert set(ArtistGenre.objects.filter(artist=artist).values_list("genre__slug", flat=True)) == {"grunge"}  # punk rock has 1 vote of 68: noise
 
 
 def test_stubs_do_not_overwrite_imported_albums(db, nirvana_respx, album_factory):
