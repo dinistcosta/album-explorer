@@ -104,7 +104,7 @@ Set `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` (pl
 pytest
 ```
 
-The suite (270+ tests) runs offline: external services are replaced by recorded fixtures (`respx`), the task queue is swapped for an immediate backend, and the clock is faked where rate limiting matters. CI (`.github/workflows/ci.yml`) also checks that no migration is missing, that `check --deploy --fail-level WARNING` passes and that `collectstatic` runs with production settings.
+The suite (340+ tests) runs offline: external services are replaced by recorded fixtures (`respx`), the task queue is swapped for an immediate backend, and the clock is faked where rate limiting matters. CI (`.github/workflows/ci.yml`) also checks that no migration is missing, that `check --deploy --fail-level WARNING` passes and that `collectstatic` runs with production settings.
 
 ## Roadmap
 
