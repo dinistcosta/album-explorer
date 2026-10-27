@@ -12,6 +12,10 @@ from .throttle import MIN_INTERVAL, acquire_slot  # noqa: F401
 
 MAX_ATTEMPTS = 3
 TIMEOUT = 10.0
+# Foreground fetches run inside a page request (gunicorn --timeout 60): one retry, short waits.
+FOREGROUND_MAX_ATTEMPTS = 2
+FOREGROUND_TIMEOUT = 5.0
+FOREGROUND_BACKOFF = 1.0
 RETRY_STATUSES = {429, 503}
 
 
@@ -59,14 +63,16 @@ def fetch(
     request_headers = {"User-Agent": f"AlbumExplorer/0.1 ( {settings.CONTACT_URL} )"}
     request_headers.update(headers or {})
 
+    attempts = FOREGROUND_MAX_ATTEMPTS if foreground else MAX_ATTEMPTS
+    timeout = FOREGROUND_TIMEOUT if foreground else TIMEOUT
     response = None
-    for attempt in range(MAX_ATTEMPTS):
+    for attempt in range(attempts):
         if attempt:
-            sleep(float(attempt))  # 1 s, then 2 s
+            sleep(FOREGROUND_BACKOFF if foreground else float(attempt))  # background: 1 s, then 2 s
         acquire_slot(source, foreground=foreground)
         try:
             response = httpx.get(
-                url, params=params, headers=request_headers, timeout=TIMEOUT,
+                url, params=params, headers=request_headers, timeout=timeout,
                 follow_redirects=True,
             )
         except httpx.TransportError:
@@ -76,7 +82,7 @@ def fetch(
             continue
         break
     if response is None or response.status_code in RETRY_STATUSES:
-        raise SourceUnavailable(f"{source}: unavailable after {MAX_ATTEMPTS} attempts")
+        raise SourceUnavailable(f"{source}: unavailable after {attempts} attempts")
 
     if response.status_code == 404:
         raise SourceNotFound(url)

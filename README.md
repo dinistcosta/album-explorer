@@ -92,7 +92,7 @@ Any host that runs a web process and a worker against PostgreSQL will do. The [`
 
 ```
 release: python manage.py migrate --noinput
-web:     gunicorn config.wsgi --log-file -
+web:     gunicorn config.wsgi --workers 2 --threads 4 --timeout 60 --log-file -
 worker:  python manage.py db_worker
 ```
 

@@ -112,3 +112,41 @@ def test_follows_redirects(db):
     respx.get("https://coverartarchive.org/a").respond(307, headers={"Location": "https://archive.org/b"})
     respx.get("https://archive.org/b").respond(200, content=b"IMG")
     assert fetch("coverart", "https://coverartarchive.org/a", binary=True) == b"IMG"
+
+
+@respx.mock
+def test_foreground_uses_short_budget(db, no_sleep, monkeypatch):
+    import sources.http as http
+
+    timeouts = []
+    real_get = httpx.get
+
+    def spy(*args, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return real_get(*args, **kwargs)
+
+    monkeypatch.setattr(http.httpx, "get", spy)
+    route = respx.get(URL).respond(503)
+    with pytest.raises(SourceUnavailable):
+        fetch("musicbrainz", URL, foreground=True)
+    assert route.call_count == 2  # one try + one retry
+    assert timeouts == [5.0, 5.0]
+    assert no_sleep == [1.0]
+
+
+@respx.mock
+def test_background_keeps_long_budget(db, no_sleep, monkeypatch):
+    import sources.http as http
+
+    timeouts = []
+    real_get = httpx.get
+
+    def spy(*args, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return real_get(*args, **kwargs)
+
+    monkeypatch.setattr(http.httpx, "get", spy)
+    respx.get(URL).respond(503)
+    with pytest.raises(SourceUnavailable):
+        fetch("musicbrainz", URL)
+    assert timeouts == [10.0, 10.0, 10.0]
