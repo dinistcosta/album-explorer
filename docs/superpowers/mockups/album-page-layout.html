@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esboço: página do álbum</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141210;
+    --bg-2: #1d1a17;
+    --ink: #ece4d4;
+    --muted: #9a907f;
+    --cream: #efe4cb;
+    --cream-ink: #2b241b;
+    --accent: #3b8fd1; /* tirada da capa */
+    --line: #2e2a25;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, serif; }
+  .q { max-width: 1100px; margin: 0 auto; padding: 32px 16px 8px; }
+  .q h1 { font-family: "Playfair Display", serif; font-weight: 500; margin: 0 0 6px; font-size: 26px; }
+  .q p { color: var(--muted); margin: 0; }
+  .tabs { display: flex; gap: 8px; margin: 20px 0 0; flex-wrap: wrap; }
+  .tabs label { font-family: "IBM Plex Mono", monospace; font-size: 13px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; color: var(--muted); }
+  input[name=v] { display: none; }
+  #va:checked ~ .q .tabs label[for=va], #vb:checked ~ .q .tabs label[for=vb] { color: var(--ink); border-color: var(--accent); }
+  .view { display: none; }
+  #va:checked ~ .view-a, #vb:checked ~ .view-b { display: block; }
+
+  .page { max-width: 1100px; margin: 24px auto 64px; padding: 0 16px; }
+  .label { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h2.album { font-family: "Playfair Display", serif; font-size: clamp(36px, 6vw, 64px); margin: 4px 0 0; line-height: 1; }
+  .artist { font-size: 20px; color: var(--accent); margin-top: 6px; }
+  .meta { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+  /* capa + disco */
+  .sleeve-wrap { position: relative; width: min(100%, 380px); aspect-ratio: 1; }
+  .disc { position: absolute; top: 4%; left: 4%; width: 92%; aspect-ratio: 1; border-radius: 50%;
+    background: repeating-radial-gradient(circle, #111 0 2px, #1b1b1b 2px 4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.6); transition: transform 1.2s cubic-bezier(.2,.8,.2,1); transform: translateX(38%); }
+  .disc::after { content: ""; position: absolute; inset: 34%; border-radius: 50%; background: var(--accent); box-shadow: inset 0 0 0 3px rgba(0,0,0,.25); }
+  .disc::before { content: ""; position: absolute; inset: 48.5%; border-radius: 50%; background: var(--bg); z-index: 2; }
+  .sleeve { position: absolute; inset: 0; border-radius: 3px; z-index: 1;
+    background: linear-gradient(160deg, #6fb6e8 0%, #2f7cc0 55%, #1d4f86 100%);
+    box-shadow: 0 20px 40px rgba(0,0,0,.5); display: flex; align-items: flex-end; padding: 18px; }
+  .sleeve span { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: rgba(255,255,255,.75); }
+  .sleeve-wrap:hover .disc { transform: translateX(55%) rotate(40deg); }
+
+  /* faixas */
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .side h3 { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .14em; color: var(--accent); margin: 0 0 8px; font-weight: 500; }
+  .side ol { margin: 0; padding: 0; list-style: none; }
+  .side li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .side li span:last-child { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+
+  /* encarte */
+  .liner { background: var(--cream); color: var(--cream-ink); padding: 28px; border-radius: 2px;
+    background-image: radial-gradient(rgba(120,90,40,.08) 1px, transparent 1px); background-size: 4px 4px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.2), 0 18px 40px rgba(0,0,0,.35); }
+  .liner h3 { font-family: "Playfair Display", serif; font-size: 24px; margin: 0 0 12px; }
+  .liner p { line-height: 1.6; margin: 0 0 12px; font-size: 16px; }
+  .source { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #7a6a52; border-top: 1px dashed #c9b895; padding-top: 10px; margin-top: 6px; }
+
+  .credits dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
+  .credits dt { font-family: "IBM Plex Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding-top: 2px; }
+  .box { border: 1px solid var(--line); background: var(--bg-2); padding: 18px; border-radius: 4px; }
+  .box h4 { margin: 0 0 12px; }
+  .awards li { margin-bottom: 6px; font-size: 14px; }
+  .awards ul { margin: 0; padding-left: 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: "IBM Plex Mono", monospace; font-size: 12px; border: 1px solid var(--line); padding: 6px 10px; border-radius: 999px; color: var(--ink); }
+  .stack > * + * { margin-top: 20px; }
+
+  /* Layout A: capa em cima, conteúdo em baixo */
+  .a-hero { display: grid; grid-template-columns: minmax(0, 380px) 1fr; gap: 48px; align-items: end; padding-bottom: 36px; border-bottom: 1px solid var(--line); }
+  .a-body { display: grid; grid-template-columns: 1.6fr 1fr; gap: 32px; margin-top: 36px; }
+
+  /* Layout B: capa fixa à esquerda */
+  .b-grid { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: 48px; }
+  .b-left { position: sticky; top: 24px; align-self: start; }
+  .b-left .sleeve-wrap { width: 100%; max-width: 300px; }
+
+  @media (max-width: 760px) {
+    .a-hero, .a-body, .b-grid, .sides { grid-template-columns: 1fr; }
+    .b-left { position: static; }
+    .sleeve-wrap { width: 70%; }
+  }
+</style>
+</head>
+<body>
+<input type="radio" name="v" id="va" checked>
+<input type="radio" name="v" id="vb">
+
+<div class="q">
+  <h1>Página do álbum: que disposição te parece melhor?</h1>
+  <p>Os conteúdos são iguais nos dois. Muda a ordem e o que fica à vista ao fazer scroll. Passa o rato pela capa para o disco deslizar.</p>
+  <div class="tabs">
+    <label for="va">A · Capa em destaque no topo</label>
+    <label for="vb">B · Capa fixa ao lado, conteúdo a correr</label>
+  </div>
+</div>
+
+<!-- ============ LAYOUT A ============ -->
+<div class="view view-a"><div class="page">
+  <section class="a-hero">
+    <div class="sleeve-wrap"><div class="disc"></div><div class="sleeve"><span>[capa do álbum]</span></div></div>
+    <div>
+      <div class="label">Álbum · 1991</div>
+      <h2 class="album">Nevermind</h2>
+      <div class="artist">Nirvana</div>
+      <div class="meta">DGC Records · Grunge, rock alternativo · 12 faixas · 42 min</div>
+      <div class="chips" style="margin-top:20px">
+        <span class="chip">▶ Spotify</span><span class="chip">▶ Apple Music</span><span class="chip">▶ YouTube</span><span class="chip">Comprar vinil</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="a-body">
+    <div class="stack">
+      <div class="sides">
+        <div class="side"><h3>LADO A</h3><ol>
+          <li><span>1. Smells Like Teen Spirit</span><span>5:01</span></li>
+          <li><span>2. In Bloom</span><span>4:14</span></li>
+          <li><span>3. Come as You Are</span><span>3:39</span></li>
+          <li><span>4. Breed</span><span>3:03</span></li>
+          <li><span>5. Lithium</span><span>4:17</span></li>
+          <li><span>6. Polly</span><span>2:57</span></li>
+        </ol></div>
+        <div class="side"><h3>LADO B</h3><ol>
+          <li><span>7. Territorial Pissings</span><span>2:22</span></li>
+          <li><span>8. Drain You</span><span>3:43</span></li>
+          <li><span>9. Lounge Act</span><span>2:36</span></li>
+          <li><span>10. Stay Away</span><span>3:32</span></li>
+          <li><span>11. On a Plain</span><span>3:16</span></li>
+          <li><span>12. Something in the Way</span><span>3:52</span></li>
+        </ol></div>
+      </div>
+      <article class="liner">
+        <h3>A história</h3>
+        <p>[Texto da história, com 3 a 5 parágrafos: como e onde foi gravado, o que se passava com a banda, como foi recebido.]</p>
+        <p>Gravado nos Sound City Studios, em Van Nuys, com produção de Butch Vig…</p>
+        <div class="source">Fonte: Wikipedia (EN) · CC BY-SA · ler artigo completo ↗</div>
+      </article>
+    </div>
+    <aside class="stack">
+      <div class="box credits"><h4>Créditos</h4><dl>
+        <dt>Produtor</dt><dd>Butch Vig</dd>
+        <dt>Mistura</dt><dd>Andy Wallace</dd>
+        <dt>Estúdio</dt><dd>Sound City, Van Nuys</dd>
+        <dt>Editora</dt><dd>DGC</dd>
+      </dl><div class="source" style="color:var(--muted);border-color:var(--line)">Fonte: MusicBrainz</div></div>
+      <div class="box awards"><h4>Prémios e distinções</h4><ul>
+        <li>Certificação Diamante (RIAA)</li>
+        <li>[outros prémios do Wikidata]</li>
+      </ul><div class="source" style="color:var(--muted);border-color:var(--line)">Fonte: Wikidata</div></div>
+    </aside>
+  </div>
+</div></div>
+
+<!-- ============ LAYOUT B ============ -->
+<div class="view view-b"><div class="page">
+  <div class="b-grid">
+    <div class="b-left">
+      <div class="sleeve-wrap"><div class="disc"></div><div class="sleeve"><span>[capa do álbum]</span></div></div>
+      <div style="margin-top:20px">
+        <div class="label">Álbum · 1991</div>
+        <h2 class="album" style="font-size:44px">Nevermind</h2>
+        <div class="artist">Nirvana</div>
+        <div class="meta">DGC Records · 12 faixas · 42 min</div>
+        <div class="chips" style="margin-top:16px">
+          <span class="chip">▶ Spotify</span><span class="chip">▶ Apple Music</span><span class="chip">▶ YouTube</span>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="sides">
+        <div class="side"><h3>LADO A</h3><ol>
+          <li><span>1. Smells Like Teen Spirit</span><span>5:01</span></li>
+          <li><span>2. In Bloom</span><span>4:14</span></li>
+          <li><span>3. Come as You Are</span><span>3:39</span></li>
+          <li><span>4. Breed</span><span>3:03</span></li>
+          <li><span>5. Lithium</span><span>4:17</span></li>
+          <li><span>6. Polly</span><span>2:57</span></li>
+        </ol></div>
+        <div class="side"><h3>LADO B</h3><ol>
+          <li><span>7. Territorial Pissings</span><span>2:22</span></li>
+          <li><span>8. Drain You</span><span>3:43</span></li>
+          <li><span>9. Lounge Act</span><span>2:36</span></li>
+          <li><span>10. Stay Away</span><span>3:32</span></li>
+          <li><span>11. On a Plain</span><span>3:16</span></li>
+          <li><span>12. Something in the Way</span><span>3:52</span></li>
+        </ol></div>
+      </div>
+      <article class="liner">
+        <h3>A história</h3>
+        <p>[Texto da história, com 3 a 5 parágrafos: como e onde foi gravado, o que se passava com a banda, como foi recebido.]</p>
+        <p>Gravado nos Sound City Studios, em Van Nuys, com produção de Butch Vig…</p>
+        <div class="source">Fonte: Wikipedia (EN) · CC BY-SA · ler artigo completo ↗</div>
+      </article>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
+        <div class="box credits"><h4>Créditos</h4><dl>
+          <dt>Produtor</dt><dd>Butch Vig</dd>
+          <dt>Mistura</dt><dd>Andy Wallace</dd>
+          <dt>Estúdio</dt><dd>Sound City, Van Nuys</dd>
+          <dt>Editora</dt><dd>DGC</dd>
+        </dl></div>
+        <div class="box awards"><h4>Prémios e distinções</h4><ul>
+          <li>Certificação Diamante (RIAA)</li>
+          <li>[outros prémios do Wikidata]</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+</body>
+</html>
