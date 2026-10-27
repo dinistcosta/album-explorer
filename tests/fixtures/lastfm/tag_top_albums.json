@@ -1,0 +1,32 @@
+{
+  "albums": {
+    "album": [
+      {
+        "name": "Nevermind",
+        "artist": {
+          "name": "Nirvana",
+          "mbid": "5b11f4ce-a62d-471e-81fc-a69a8278c7da"
+        },
+        "mbid": "1b022e01-4da6-387b-8658-8678046e4cef",
+        "@attr": {
+          "rank": "1"
+        }
+      },
+      {
+        "name": "Ten",
+        "artist": {
+          "name": "Pearl Jam",
+          "mbid": ""
+        },
+        "mbid": "",
+        "@attr": {
+          "rank": "2"
+        }
+      }
+    ],
+    "@attr": {
+      "tag": "grunge",
+      "page": "1"
+    }
+  }
+}

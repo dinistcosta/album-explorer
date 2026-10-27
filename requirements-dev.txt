@@ -3,4 +3,3 @@ pytest
 pytest-django
 pytest-freezer
 respx
-Babel

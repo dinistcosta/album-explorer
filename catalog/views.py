@@ -1,11 +1,13 @@
 from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import get_language
 
 from sources.http import SourceNotFound, SourceUnavailable
 
 from .models import Album
 from .services.album_import import import_album_core
+from .services.stories import select_story
 from .services.refresh import enqueue_enrichment, needs_enrichment
 
 MAX_POLLS = 15
@@ -45,7 +47,7 @@ def _sections_context(album, n=0):
         "credits": list(credits.items()),
         "other_releases": album.releases.exclude(pk=album.reference_release_id).order_by("date")[:12],
         "quotes": list(album.quotes.all()),
-        "stories": list(album.stories.all()),
+        "story": select_story(album, get_language()),
         "awards": list(album.awards.all()),
         "genres": [ag.genre for ag in album.album_genres.select_related("genre")],
         "polling": polling,

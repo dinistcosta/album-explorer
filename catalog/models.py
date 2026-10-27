@@ -69,6 +69,8 @@ class Album(LockableModel):
     accent_color = models.CharField(max_length=16, blank=True, default="")
     wikidata_id = models.CharField(max_length=32, blank=True)
     discogs_master_id = models.CharField(max_length=32, blank=True)
+    discogs_styles = models.JSONField(default=list, blank=True)
+    discogs_notes = models.TextField(blank=True)
     lastfm_listeners = models.IntegerField(null=True, blank=True)  # sorting only, never displayed
     imported_at = models.DateTimeField(null=True, blank=True)
     enriched_at = models.DateTimeField(null=True, blank=True)
@@ -133,6 +135,7 @@ class Credit(models.Model):
     place = models.ForeignKey(Place, null=True, blank=True, on_delete=models.SET_NULL, related_name="credits")
     role = models.CharField(max_length=100)
     attributes = models.JSONField(default=list, blank=True)
+    begin_date = models.CharField(max_length=10, blank=True)  # partial date from the MB relation, e.g. "1991-05"
     is_manual = models.BooleanField(default=False)
 
 

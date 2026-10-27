@@ -76,7 +76,8 @@ def _collect_credits(reference: dict) -> list[dict]:
             entry = {"key": key, "role": ARTIST_ROLES[rtype], "attributes": attrs, "artist": rel["artist"]}
             ident = (key, entry["role"], tuple(attrs), rel["artist"]["id"])
         elif target == "place" and rtype == "recorded at" and rel.get("place"):
-            entry = {"key": key, "role": "recorded at", "attributes": attrs, "place": rel["place"]}
+            entry = {"key": key, "role": "recorded at", "attributes": attrs, "place": rel["place"],
+                     "begin": rel.get("begin") or ""}
             ident = (key, "recorded at", tuple(attrs), rel["place"]["id"])
         else:
             continue
@@ -161,6 +162,7 @@ def import_album_core(mbid: str, *, foreground: bool) -> Album:
             Credit.objects.create(
                 album=album, track=tracks.get(entry["key"]) if entry["key"] else None,
                 person=person, place=place, role=entry["role"], attributes=entry["attributes"],
+                begin_date=entry.get("begin", ""),
             )
     return album
 

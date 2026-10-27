@@ -88,3 +88,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
   .a-body { grid-template-columns: 1fr; grid-template-areas: "tracks" "liner" "aside"; gap: 24px; }
   .sleeve-wrap { width: 70%; }
 }
+.liner .notice { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #7a6a52; margin: 0 0 12px; }
+.liner h4 { font-family: "Playfair Display", serif; font-size: 18px; margin: 16px 0 8px; }
+.liner details.more summary { cursor: pointer; font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #7a6a52; margin: 4px 0 12px; }
+.liner .notes { border-top: 1px dashed #c9b895; margin-top: 12px; padding-top: 4px; }
+.liner .notes h4 { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #7a6a52; }
+.liner .placeholder { font-style: italic; color: #7a6a52; }
