@@ -56,8 +56,28 @@ class CreditInline(admin.TabularInline):
     model = Credit
     fk_name = "album"
     extra = 0
-    raw_id_fields = ("track", "person", "place")
+    # A full import can carry hundreds of credits; the album page only links to them.
+    # Editing happens in CreditAdmin (searchable, filterable), which keeps the form small.
+    fields = ("role", "person", "track")
+    readonly_fields = ("role", "person", "track")
+    show_change_link = True
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Credit)
+class CreditAdmin(admin.ModelAdmin):
+    list_display = ("album", "role", "person", "track", "is_manual")
+    list_filter = ("role", "is_manual")
+    search_fields = ("album__title", "person__name", "role")
+    raw_id_fields = ("album", "track", "person", "place")
     readonly_fields = ("is_manual",)
+
+    def save_model(self, request, obj, form, change):
+        obj.is_manual = True
+        super().save_model(request, obj, form, change)
 
 
 class StoryInline(admin.StackedInline):

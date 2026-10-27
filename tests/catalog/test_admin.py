@@ -133,16 +133,31 @@ def test_untouched_inline_rows_stay_unmanual(admin_client, imported_album):
     assert not Credit.objects.filter(album=imported_album, is_manual=True).exists()
 
 
-def test_changed_inline_credit_marked_manual(admin_client, imported_album):
+def test_album_form_links_credits_without_editable_rows(admin_client, imported_album):
     credit = Credit.objects.filter(album=imported_album).first()
-    data = form_data(admin_client, imported_album)
-    data["credits-0-role"] = "mastering wizard"
-    r = admin_client.post(change_url(imported_album), data)
+    page = admin_client.get(change_url(imported_album)).content.decode()
+    assert "credits-0-role" not in page
+    assert reverse("admin:catalog_credit_change", args=[credit.pk]) in page
+
+
+def test_credit_edited_in_standalone_admin_marked_manual(admin_client, imported_album):
+    credit = Credit.objects.filter(album=imported_album).first()
+    url = reverse("admin:catalog_credit_change", args=[credit.pk])
+    data = {"album": credit.album_id, "track": credit.track_id or "", "person": credit.person_id or "",
+            "place": credit.place_id or "", "role": "mastering wizard", "attributes": "[]",
+            "begin_date": credit.begin_date, "_save": "Save"}
+    r = admin_client.post(url, data)
     assert r.status_code == 302, r.content.decode()[:3000]
-    credit_ids = [c.pk for c in imported_album.credits.all()]
-    manual = Credit.objects.filter(album=imported_album, is_manual=True)
-    assert manual.count() == 1 and manual[0].role == "mastering wizard"
-    assert credit.pk in credit_ids
+    credit.refresh_from_db()
+    assert credit.role == "mastering wizard" and credit.is_manual is True
+
+
+def test_credit_admin_search_and_filter(admin_client, imported_album):
+    url = reverse("admin:catalog_credit_changelist")
+    r = admin_client.get(url, {"q": "Nevermind"})
+    assert r.status_code == 200
+    assert r.context["cl"].result_count == Credit.objects.filter(album=imported_album).count()
+    assert admin_client.get(url, {"role": "producer"}).status_code == 200
 
 
 def test_inline_quote_on_artist_marked_manual(admin_client, artist_factory):
